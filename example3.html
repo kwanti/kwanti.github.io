@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <meta name="author" content="">
+    <meta name="description" content="C++ remote server and client">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- <link rel="shortcut icon" href="favicon.ico"> -->
+
+    <!-- title for this page -->
+    <title>CppRemote - Example 3</title>
+
+    <!-- css from 3rd party vendor -->
+    <link rel="stylesheet" href="css/vendor/bootstrap.min.css">
+    <!-- <link rel="stylesheet" href="css/vendor/bootstrap-theme.min.css"> -->
+    <link rel="stylesheet" href="css/vendor/prettify.css">
+
+    <!-- custom styles -->
+    <link rel="stylesheet" href="css/main.css">
+
+    <!-- HTML5 shim and Respond.js IE8 support of HTML5 elements and media queries -->
+    <!--[if lt IE 9]>
+      <script src="js/vendor/html5shiv.js"></script>
+      <script src="js/vendor/respond.min.js"></script>
+    <![endif]-->
+
+    <!-- Google Analytics -->
+    <script>
+      var gaProperty = 'UA-45742852-1';
+      var disableStr = 'ga-disable-' + gaProperty;
+      if (document.cookie.indexOf(disableStr + '=true') > -1) {
+        window[disableStr] = true;
+      }
+      
+	  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+	  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+	  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+	  })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+	  ga('create', gaProperty, 'cppremote.com');
+	  ga('send', 'pageview');
+    </script>
+  </head>
+  <body data-spy="scroll" data-target=".my-toc" data-offset=50>
+    <!-- begin content -->
+    <!-- top navbar -->
+    <div class="navbar navbar-fixed-top navbar-inverse" role="navigation">
+      <div class="container">
+        <div class="navbar-header">
+          <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </button>
+          <a class="navbar-brand" href="www.cppremote.com">CppRemote</a>
+        </div>
+        <div class="collapse navbar-collapse">
+          <ul class="nav navbar-nav">
+            <li><a href="index.html">Home</a></li>
+            <li class="active"><a href="examples.html#example3">Examples</a></li>
+            <li><a href="documentation.html">Documentation</a></li>
+            <li><a href="download.html">Download</a></li>
+            <li><a href="forum.html">Forum</a></li>
+          </ul>
+        </div><!--/.nav-collapse -->
+      </div><!-- container -->
+    </div><!-- top navbar -->
+
+    <!-- page content -->
+    <div class="container my-page-container">
+      <div class="row">
+
+        <!-- page main area -->
+        <div class="my-main col-md-7" role="main">
+
+          <!-- add content here -->
+          <h2 id="header1">Example 3</h2>
+		  <p>This tutorial explores more about session and server classes, and it also shows how to set attributes of remote pointer.  It introduces the items below:</p>
+          <ul>
+			<li>Handling session and server events</li>
+			<li>Connect session and server with customized bindings.</li>
+			<li>Setting number of thread for global io_runner</li>
+			<li>Binding multiple instances of object as remote services</li>
+			<li>Binding target as remote service through a session object at client site</li>
+			<li>Change remote pointer to one-way call mode</li>
+			<li>Rethrowing exception pointer</li>
+          </ul>
+
+          <p>We will make both server and client applications export remote interface.  Server will export 2 objects as remote player and 1 object as remote air conditions service.  Client will export <code>info_service</code> so that the server can query the name of the connected session.  Let's start by defining 3 remote interfaces below which are to be included to both client and server applications.</p>
+		  
+		  <blockquote>
+		    <p><strong>Note:</strong> only the remote interface definition part of code is shown.</p>
+		  </blockquote>
+
+		  <div class="my-anchor" id="remote_player_hpp"></div>
+          <pre class="prettyprint lang-cpp linenums">
+// remote_player.hpp
+REMOTE_CLASS_BEGIN(remote_player)                   \
+    REMOTE_METHOD_M1(void, play, std::string)       \
+    REMOTE_METHOD_M0(void, stop)                    \
+REMOTE_CLASS_END</pre>
+
+		  <div class="my-anchor" id="remote_ac_hpp"></div>
+          <pre class="prettyprint lang-cpp linenums">
+// remote_ac.hpp
+REMOTE_CLASS_BEGIN(remote_ac)                       \
+    REMOTE_METHOD_M1(void, set_temperature, int)    \
+    REMOTE_METHOD_C0(int, get_temperature)          \
+REMOTE_CLASS_END</pre>
+
+		  <div class="my-anchor" id="info_service_hpp"></div>
+          <pre class="prettyprint lang-cpp linenums">
+// info_service.hpp
+REMOTE_CLASS_BEGIN(info_service)                    \
+    REMOTE_METHOD_C0(std::string, name)             \
+REMOTE_CLASS_END</pre>
+
+
+          <p>Then define the service handler classes for server.</p>
+		  <div class="my-anchor" id="model_hpp"></div>
+          <pre class="prettyprint lang-cpp linenums">
+// model.hpp
+class audio_player
+{
+public:
+    void play(std::string song) { m_playing = true; }
+    void stop() { m_playing = false; }
+    
+private:
+    bool m_playing;
+};
+
+class air_cond
+{
+public:
+    void set_temperature(int t) { m_temperature = t; }
+    int get_temperature() const { return m_temperature; }
+
+private:
+    int m_temperature;
+};</pre>
+
+		  <p>And the service handler class for client.</p>
+		  <div class="my-anchor" id="session_info_hpp"></div>
+          <pre class="prettyprint lang-cpp linenums">
+// session_info.hpp
+class session_info
+{
+public:
+    session_info(std::string name): m_name(name) {}
+    std::string name() const { return m_name; }
+
+private:
+    std::string m_name;
+};</pre>
+
+
+		  <p>In this example, the server application code will be more complicated.  We will create <code>on_start</code> function to handle the server start event and <code>on_accept</code> function to handle the session accepted event.  The <code>on_start</code> function will handle the error by rethrowing the exception held by exception_ptr in a try-catch block.  The <code>on_accept</code> function will call the <code>what</code> method of the exception_ptr to get the error message directly and if there is no error, it will get the <code>info_service</code> remote pointer from the connected session to query the session name.</p>
+		  
+		  <p>In the main function, we will set the global io runner to run in 2 threads and then start the server with customized binding.</p>
+		  
+		  <div class="my-anchor" id="server_cpp"></div>
+          <pre class="prettyprint lang-cpp linenums">
+// server.cpp
+#include &lt;remote/server.hpp>
+#include &lt;remote/global.hpp>
+#include &lt;remote/make_basic_binding.hpp>
+#include &lt;remote/bindings/binary_serializer.hpp>
+#include &lt;remote/bindings/ipc_transport.hpp>
+
+void on_start(remote::exception_ptr e)
+{
+    if(!e)
+    {
+        std::cout &lt;&lt; "server started" &lt;&lt; std::endl;
+        return;
+    }
+
+    // handle error by rethrowing the exception
+    try
+    {
+        remote::rethrow_exception(e);
+    }
+    catch(remote::system_error& error)
+    {
+        std::cout &lt;&lt; "system error: " &lt;&lt; error.what() &lt;&lt; std::endl;
+    }
+    catch(remote::remote_error& error)
+    {
+        std::cout &lt;&lt; "remote error: " &lt;&lt; error.what() &lt;&lt; std::endl;
+    }
+    catch(std::exception& error)
+    {
+        std::cout &lt;&lt; "other error: " &lt;&lt; error.what() &lt;&lt; std::endl;
+    }
+}
+
+void on_accept(remote::exception_ptr e, remote::session& session)
+{
+    // another way to handle error is to call the e->what() directly
+    if(e)
+    {
+        std::cout &lt;&lt; "error when accepting a session: " &lt;&lt; e->what() &lt;&lt; std::endl;
+        return;
+    }
+
+    try
+    {
+        // get info service interface from the newly connected session.
+        auto info = session.get&lt;info_service>("info");
+        std::cout &lt;&lt; "accepted a session: " &lt;&lt; info->name() &lt;&lt; std::endl;
+    }
+    catch(std::exception& error)
+    {
+        std::cout &lt;&lt; "error when get session info: " &lt;&lt; error.what() &lt;&lt; std::endl;
+    }
+}
+
+int main()
+{
+    // set application io runner to run 2 threads
+    remote::global::io_runner(2);
+
+    // create target objects
+    audio_player walkman;
+    audio_player ipod;
+    air_cond room_ac;
+
+    // create multiple instances of remote services
+    // by binding target objects to their remote interfaces
+    remote::server server;
+    server.bind&lt;remote_player>(&walkman, "walkman");
+    server.bind&lt;remote_player>(&ipod, "ipod");
+    server.bind&lt;remote_ac>(&room_ac, "room ac");
+
+    // construct customized binding
+    typedef remote::bindings::binary_serializer serializer;
+    typedef remote::bindings::ipc_transport transport;
+    auto binding = remote::make_basic_binding&lt;serializer, transport>("tutorial");
+
+    // setting event handlers and start the server
+    server.set_accept_handler(on_accept);
+    server.start(binding, on_start);
+
+    std::cin.get();
+    return 0;
+}</pre>
+
+		  <div class="my-anchor" id="client_cpp"></div>
+          <pre class="prettyprint lang-cpp linenums">
+// client.cpp
+#include &lt;remote/session.hpp>
+#include &lt;remote/attribute.hpp>
+#include &lt;remote/global.hpp>
+#include &lt;remote/make_basic_binding.hpp>
+#include &lt;remote/bindings/binary_serializer.hpp>
+#include &lt;remote/bindings/ipc_transport.hpp>
+
+void on_start(remote::exception_ptr e)
+{
+    // handle session start event here
+}
+
+void on_stop(remote::exception_ptr e)
+{
+    // handle session stop event here
+}
+
+void on_error(remote::exception_ptr e)
+{
+    // handle io error event here
+}
+
+int main()
+{
+    // set application io runner to run 2 threads
+    remote::global::io_runner(2);
+
+    // bind info service to session
+    remote::session session;
+    session_info info("My Session");
+    session.bind&lt;info_service>(&info , "info");
+
+    // construct customized binding
+    typedef remote::bindings::binary_serializer serializer;
+    typedef remote::bindings::ipc_transport transport;
+    auto binding = remote::make_basic_binding&lt;serializer, transport>("tutorial");
+
+    // set event handler and start the session
+    session.set_error_handler(on_error);
+    session.start(binding, on_start);
+    if(session.wait_for_ready() != remote::session::started)
+        return -1;
+
+    // get remote pointer
+    auto ac = session.get&lt;remote_ac>("room ac");
+    auto ipod = session.get&lt;remote_player>("ipod");
+    auto walkman = session.get&lt;remote_player>("walkman");
+
+    // use ac
+    ac->set_temperature(25);
+
+    // use walkman
+    walkman->play("jazz");      // this is 2 way call
+
+    // switch to one way mode
+    remote::attribute::set_one_way(ipod, true);
+    ipod->play("pop rock");     // this is one way call
+
+    // switch back to normal mode
+    remote::attribute::set_one_way(ipod, false);
+    ipod->stop();               // this is 2 way call
+
+    // stop the session and set event handler
+    session.stop(on_stop);
+
+    return 0;
+}</pre>
+
+		  <a class="btn btn-default navbar-btn my-next-btn" href="example4.html">Next Example</a>
+		
+        </div>
+
+        <!-- page right sidebar -->
+        <div class="my-sidebar col-md-3" role="complementary">
+          <div class="my-toc hidden-print affix">
+            <ul class="nav">
+
+              <!-- add toc list here -->
+			  <li><a href="#remote_player_hpp">remote_player.hpp</a></li>
+			  <li><a href="#remote_ac_hpp">remote_ac.hpp</a></li>
+			  <li><a href="#info_service_hpp">info_service.hpp</a></li>
+			  <li><a href="#model_hpp">model.hpp</a></li>
+			  <li><a href="#session_info_hpp">session_info.hpp</a></li>
+			  <li><a href="#server_cpp">server.cpp</a></li>
+			  <li><a href="#client_cpp">client.cpp</a></li>
+
+            </ul>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- footer -->
+    <hr>
+    <footer><p>&copy; Ng Kwan Ti 2013</p></footer>
+    <!-- end content -->
+
+    <!-- js from 3rd party vendor -->
+    <script src="//ajax.googleapis.com/ajax/libs/jquery/1.10.1/jquery.min.js"></script>
+    <script>window.jQuery || document.write('<script src="js/vendor/jquery-1.10.1.min.js"><\/script>')</script>
+    <script src="//netdna.bootstrapcdn.com/bootstrap/3.0.0/js/bootstrap.min.js"></script>
+    <script>$.fn.modal || document.write('<script src="js/vendor/bootstrap.min.js"><\/script>')</script>
+    <script src="js/vendor/prettify.js"></script>
+
+    <!-- custom js -->
+    <script src="js/main.js"></script>
+  </body>
+</html>

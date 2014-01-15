@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <meta name="author" content="">
+    <meta name="description" content="C++ remote build manual">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- <link rel="shortcut icon" href="favicon.ico"> -->
+
+    <!-- title for this page -->
+    <title>CppRemote - Build Manual</title>
+
+    <!-- css from 3rd party vendor -->
+    <link rel="stylesheet" href="css/vendor/bootstrap.min.css">
+    <!-- <link rel="stylesheet" href="css/vendor/bootstrap-theme.min.css"> -->
+    <link rel="stylesheet" href="css/vendor/prettify.css">
+
+    <!-- custom styles -->
+    <link rel="stylesheet" href="css/main.css">
+
+    <!-- HTML5 shim and Respond.js IE8 support of HTML5 elements and media queries -->
+    <!--[if lt IE 9]>
+      <script src="js/vendor/html5shiv.js"></script>
+      <script src="js/vendor/respond.min.js"></script>
+    <![endif]-->
+
+	<!-- Google Analytics -->
+	<script>
+      var gaProperty = 'UA-45742852-1';
+      var disableStr = 'ga-disable-' + gaProperty;
+      if (document.cookie.indexOf(disableStr + '=true') > -1) {
+        window[disableStr] = true;
+      }
+      
+	  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+	  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+	  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+	  })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+	  ga('create', gaProperty, 'cppremote.com');
+	  ga('send', 'pageview');
+	</script>
+  </head>
+  <body data-spy="scroll" data-target=".my-toc" data-offset=50>
+    <!-- begin content -->
+	<!-- top navbar -->
+	<div class="navbar navbar-fixed-top navbar-inverse" role="navigation">
+	  <div class="container">
+	    <div class="navbar-header">
+          <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </button>
+		  <a class="navbar-brand" href="www.cppremote.com">CppRemote</a>
+		</div>
+        <div class="collapse navbar-collapse">
+          <ul class="nav navbar-nav">
+            <li><a href="index.html">Home</a></li>
+            <li><a href="examples.html">Examples</a></li>
+            <li class="active"><a href="documentation.html">Documentation</a></li>
+            <li><a href="download.html">Download</a></li>
+			<li><a href="forum.html">Forum</a></li>
+          </ul>
+        </div><!--/.nav-collapse -->
+	  </div><!-- container -->
+	</div><!-- top navbar -->
+
+    <!-- page content -->
+	<div class="container my-page-container">
+	  <div class="row">
+
+	    <!-- page main area -->
+		<div class="my-main col-md-7" role="main">
+		<h2>Building the library</h2>
+		
+		<p>Make sure you have <a href="http://www.boost.org">boost library</a> installed.</p>
+		<p>Get CppRemote source code by:<br>
+		  <ul>
+			<li><code>git clone git://github.com/kwanti/CppRemote.git</code></li>
+			<li>or download from <a href="https://github.com/kwanti/CppRemote/archive/master.zip">here</a>.</li>
+		  </ul>
+		</p>
+		<p>You can build from the ide project files inside the <code>ide</code> folder.</p>
+		<p>You can also build the library from command prompt window using <a href="http://www.cmake.org/">cmake</a>.</p>
+		<ol>
+		  <li><code>cd &lt;CppRemote root directory></code> (There should be a <em>CMakeLists.txt</em> in this directory)</li>
+          <li><code>mkdir build</code></li>
+		  <li><code>cmake ..</code></li>
+		  <li><code>cmake --build .</code></li>
+		</ol>
+
+		<blockquote>
+        <p><strong>Note:</strong> If cmake could not find boost library, you need to update the BOOST_ROOT path in the CMakeLists.txt.</p>
+		</blockquote>
+        
+		<blockquote>
+		  <p>When building your application, make sure you link to the libraries below.</p>
+		  <ul>
+			<li><code>remote</code> (this library)</li>
+			<li><code>boost.serialization</code></li>
+			<li><code>boost.thread</code></li>
+			<li><code>boost.system</code></li>
+			<li><code>boost.chrono</code></li>
+		  </ul>
+          <p>On Linux, you will need to link to <code>pthread</code>.</p>
+		  <p>On Windows, you will also need to link to <code>ws2_32</code> and <code>wswsock2</code>.</p>
+		</blockquote>
+
+		</div>
+		
+		<!-- page right sidebar -->
+		<div class="my-sidebar col-md-3" role="complementary">
+		  <div class="my-toc hidden-print affix">
+		    <ul class="nav">			  
+			</ul>
+		  </div>
+		</div>
+		
+	  </div>
+	</div>
+
+	<!-- footer -->
+	<hr>
+	<footer><p>&copy; Ng Kwan Ti 2013</p></footer>
+    <!-- end content -->
+	
+    <!-- js from 3rd party vendor -->
+    <script src="//ajax.googleapis.com/ajax/libs/jquery/1.10.1/jquery.min.js"></script>
+    <script>window.jQuery || document.write('<script src="js/vendor/jquery-1.10.1.min.js"><\/script>')</script>
+    <script src="//netdna.bootstrapcdn.com/bootstrap/3.0.0/js/bootstrap.min.js"></script>
+    <script>$.fn.modal || document.write('<script src="js/vendor/bootstrap.min.js"><\/script>')</script>
+    <script src="js/vendor/prettify.js"></script>
+
+    <!-- custom js -->
+    <!-- <script src="js/plugins.js"></script> <!-- custom plugin code for jquery -->
+    <script src="js/main.js"></script>
+  </body>
+</html>

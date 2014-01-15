@@ -1,0 +1,906 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <meta name="author" content="">
+    <meta name="description" content="C++ remote user manual 1.  Remote interface concept, semantics and idl.">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- <link rel="shortcut icon" href="favicon.ico"> -->
+
+    <!-- title for this page -->
+    <title>CppRemote - User Manual 1</title>
+
+    <!-- css from 3rd party vendor -->
+    <link rel="stylesheet" href="css/vendor/bootstrap.min.css">
+    <!-- <link rel="stylesheet" href="css/vendor/bootstrap-theme.min.css"> -->
+    <link rel="stylesheet" href="css/vendor/prettify.css">
+
+    <!-- custom styles -->
+    <link rel="stylesheet" href="css/main.css">
+
+    <!-- HTML5 shim and Respond.js IE8 support of HTML5 elements and media queries -->
+    <!--[if lt IE 9]>
+      <script src="js/vendor/html5shiv.js"></script>
+      <script src="js/vendor/respond.min.js"></script>
+    <![endif]-->
+
+	<!-- Google Analytics -->
+	<script>
+      var gaProperty = 'UA-45742852-1';
+      var disableStr = 'ga-disable-' + gaProperty;
+      if (document.cookie.indexOf(disableStr + '=true') > -1) {
+        window[disableStr] = true;
+      }
+      
+	  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+	  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+	  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+	  })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+	  ga('create', gaProperty, 'cppremote.com');
+	  ga('send', 'pageview');
+	</script>
+  </head>
+  <body data-spy="scroll" data-target=".my-toc" data-offset=50>
+    <!-- begin content -->
+	<!-- top navbar -->
+	<div class="navbar navbar-fixed-top navbar-inverse" role="navigation">
+	  <div class="container">
+	    <div class="navbar-header">
+          <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </button>
+		  <a class="navbar-brand" href="www.cppremote.com">CppRemote</a>
+		</div>
+        <div class="collapse navbar-collapse">
+          <ul class="nav navbar-nav">
+            <li><a href="index.html">Home</a></li>
+            <li><a href="examples.html">Examples</a></li>
+            <li class="active"><a href="documentation.html#manual">Documentation</a></li>
+            <li><a href="download.html">Download</a></li>
+			<li><a href="forum.html">Forum</a></li>
+          </ul>
+        </div><!--/.nav-collapse -->
+	  </div><!-- container -->
+	</div><!-- top navbar -->
+
+    <!-- page content -->
+	<div class="container my-page-container">
+	  <div class="row">
+
+	    <!-- page main area -->
+		<div class="my-main col-md-7" role="main">
+
+		  <!-- add content here -->
+
+          <!-- Remote Interface -->
+          <section>
+            <h2 id="interface">Remote Interface</h2>
+            <p>Remote Interface is an extended concept of class interface.  Instead of just specifying the publicly accessible methods of a class, it also specifies the remotely accessible methods.  It's concept is similar to the IDL language in other distributed system.</p>
+
+            <!-- definition -->
+            <section>
+            <h3 id="interface_definition">Defining Remote Interface</h3>
+            <p>Remote Interface is defined in a header file using a set of macro definitions and header files following the format below:</p>
+
+            <pre class="prettyprint lang-cpp linenums">
+// RI_header_file.hpp
+#include &ltremote/idl.hpp&gt;
+
+#define REMOTE_CLASS            \
+REMOTE_CLASS_BEGIN_x(...)       \
+    REMOTE_METHOD_xx(...)       \
+REMOTE_CLASS_END
+#include &lt;remote/idl/class.hpp&gt;
+
+#define REMOTE_REGISTER_CLASS ...
+#include &lt;remote/idl/register_class.hpp&gt;
+            </pre>
+
+            <p>Every remote interface definition file must follow the sequence below:</p>
+            <ol>
+              <li>include <code>&lt;remote/idl.hpp&gt;</code></li>
+              <li>define <code>REMOTE_CLASS</code> macro</li>
+              <li>include <code>&lt;remote/idl/class.hpp&gt;</code></li>
+              <li>define <code>REMOTE_REGISTER_CLASS</code> macro</li>
+              <li>include <code>&lt;remote/idl/register_class.hpp&gt;</code></li>
+            </ol>
+
+            <p>In the <code>REMOTE_CLASS</code> macro definition, we must:</p>
+            <ol>
+              <li>first declare <code>REMOTE_CLASS_BEGIN</code> or <code>REMOTE_CLASS_BEGIN_x</code>,</li>
+              <li>follow by zero of more <code>REMOTE_METHOD_xx</code> or <code>REMOTE_ASYNC_xx</code>,</li>
+              <li>finally by <code>REMOTE_CLASS_END</code>.</li>
+            </ol>
+
+            <p>Remote interface can reside in a nested namespace by including the <code>remote/idl/class.hpp</code> in the namespace.</p>
+            <p>In the <code>REMOTE_REGISTER_CLASS</code> macro definition, we must define the fully namespace qualified remote interface name and the <code>remote/idl/register_class.hpp</code> file must be included in the global namespace.</p>
+
+            <blockquote>
+              <p><strong>Note:</strong> Remember to add header include guards or <code>#pragma once</code> to this header file.</p>
+            </blockquote>
+            </section>
+
+            <!-- inheritance -->
+            <section>
+            <h3 id="interface_inheritance">Inheritance</h3>
+            <p>There are 2 types of macro we can use to declare RI class, which are <code>REMOTE_CLASS_BEGIN</code> and <code>REMOTE_CLASS_BEGIN_x</code>.  The <code>x</code> placeholder in <code>REMOTE_CLASS_BEGIN_x</code> macro is to specify how many base class this RI inherit from.  <code>REMOTE_CLASS_BEGIN</code> is a special case for <code>REMOTE_CLASS_BEGIN_0</code> where there is no base class.  The base class must not be remote interface class.</p>
+
+            <p>e.g.:</p>
+            <pre class="prettyprint lang-cpp linenums">
+REMOTE_CLASS_BEGIN(table)                => class table {};
+REMOTE_CLASS_BEGIN_0(cup)                => class cup {};
+REMOTE_CLASS_BEGIN_1(milk, food)         => class milk: public food {};
+REMOTE_CLASS_BEGIN_2(apple, food, vege)  => class apple: public food, public vege {};</pre>
+
+            <blockquote>
+              <p><strong>Rationale:</strong></p>
+              <p>Why not use <code>REMOTE_INTERFACE</code>, <code>REMOTE_INTERFACE_BEGIN</code>, <code>REMOTE_INTERFACE_END</code>, <code>REMOTE_REGISTER_INTERFACE</code> and <code>REMOTE_IMPLEMENT_INTERFACE</code> instead?</p>
+              <ul>
+                <li>C++ use <code>class</code> keyword to define an interface class.</li>
+                <li><code>REMOTE_CLASS</code> macro is shorter than <code>REMOTE_INTERFACE</code> macro.  This can reduce typing and line length of source code.</li>
+              </ul>
+            </blockquote>
+            </section>
+
+            <!-- implementation -->
+            <section>
+            <h3 id="interface_implementation">Implementation File</h3>
+            <p>It is required to define an implementation (.cpp) file for RI.  The implementation file is defined following the format below.</p>
+
+            <pre class="prettyprint lang-cpp linenums">
+#include &lt;serializer_file.hpp&gt;
+#define REMOTE_IMPLEMENT_CLASS ...
+#include "RI_header_file.hpp"</pre>
+
+            <p>The rule below must be followed when declaring RI implementation file.</p>
+            <ul>
+              <li>the <code>REMOTE_IMPLEMENT_CLASS</code> macro must be defined before we include the RI header file.</li>
+              <li>define <code>REMOTE_IMPLEMENT_CLASS</code> as fully namespace qualified RI name.</li>
+              <li>all the serializer header files must be included before including the RI header file.</li>
+              <li>all the RI header files for RI that should not be implemented in this implementation file must be included again before the <code>REMOTE_IMPLEMENT_CLASS</code> definition.</li>
+            </ul>
+
+            <blockquote>
+              <p><strong>Rationale:</strong></p>
+              <p>Why must we include the serializer file in the RI implementation?  This is so inconvenient and not flexible.</p>
+              <ul>
+                <li>This is due to the requirement in boost.serialization to include the boost archive files before calling the macro <code>BOOST_CLASS_EXPORT</code>.  To mitigate this, we can create a <code>binding.hpp</code> header file that include all the serializer files that is used in a project and then include that <code>binding.hpp</code> file in all the RI implementation files.</li>
+              </ul>
+            </blockquote>
+
+            </section>
+
+          </section>
+
+          <!-- Remote Method -->
+          <section>
+            <h2 id="method">Remote Method</h2>
+            <p>Remote method is defined inside a remote interface definition.  Remote method definition determines the actual interface in the generated proxy, it's call semantic and also the target method that can be bound to it.  The remote method can be defined as sync/async methods and const/non-const methods.</p>
+
+            <h3 id="method_definition">Defining Remote Method</h3>
+            <p>The macros <code>REMOTE_METHOD_xx</code> and <code>REMOTE_ASYNC_xx</code> define the type of remote method as below.  Each macro determines the signature of the interface method.</p>
+
+            <table class="table">
+              <tr><th>Method Type</th><th>Method definition</th><th>Method signature</th></tr>
+              <tr><td rowspan=2>sync</td><td><code>REMOTE_METHOD_Mx</code></td><td><code>R MethodName(A1, A2, ..., Ax)</code></td></tr>
+              <tr><td><code>REMOTE_METHOD_Cx</code></td><td><code>R MethodName(A1, A2, ..., Ax) const</code></td></tr>
+              <tr><td rowspan=2>async</td><td><code>REMOTE_ASYNC_Mx</code></td><td><code>future&lt;R&gt; MethodName(A1, A2, ..., Ax)</code></td></tr>
+              <tr><td><code>REMOTE_ASYNC_Cx</code></td><td><code>future&lt;R&gt; MethodName(A1, A2, ..., Ax) const</code></td></tr>
+            </table>
+
+            <p>The signature of the remote method determines which target method can bind to it.  Target method can bind to a remote method if it satisfies the following conditions:</p>
+            <ul>
+              <li>target and remote method name must be same.</li>
+              <li>target and remote method must be const compatible.</li>
+              <li>number of parameter must be same.</li>
+              <li>all of their parameter type must be same.</li>
+              <li>if return type of remote method is not void, return type of the target method must be compatible.</li>
+              <li>if reutnr type of remote method is void, the return type of the target method is ignored.</li>
+              <li>return type is compatible if they have same type or target method return a <code>future object</code> of same type.</li>
+            </ul>
+
+            <blockquote>
+              <p><strong>Note:</strong></p>
+              <p><code>future object</code> can be either <code>std::future</code>, <code>boost::future</code> or <code>remote:future</code>.</p>
+            </blockquote>
+
+            <blockquote>
+              <p><strong>Rationale:</strong></p>
+              <p>Why void remote method doesn't require a target method to return void?</p>
+              <ul>
+                <li>So that we can express that the return value is ignored.  In a remote call, even if we ignore the return value at caller site, the return value from target method will still be sent back to the caller site.  This will waste network bandwidth and runtime processing.</li>
+                <li>To enable us to call a target method that return non-void with <a href="#attribute_set_one_way"><em>one-way</em></a> call mode.</li>
+              </ul>
+            </blockquote>
+
+            <h3 id="method_synchronous">Synchronous Remote Method</h3>
+            <p>Synchronous method has normal method call semantic where the method returns only when return value available or exception thrown.  The life time of a synchronous method call start when it is invoked and end when it is return.</p>
+            <p>When a synchronous remote method is invoked:</p>
+
+            <p>At call site:</p>
+            <ol>
+              <li>Create a call object and a result object.  Pass call parameters into the call object.  Generate a call id and assign it to the call and result objects.</li>
+              <li>Send (serialize & transfer) the call object to remote site where actual target object resides.</li>
+              <li>Wait for the call to return from remote site.</li>
+            </ol>
+
+            <p>At remote site:</p>
+            <ol>
+              <li>Get (receive & deserialize) a call object.</li>
+              <li>Dispatch the call object to correspondent service object.</li>
+              <li>Marshal remote call parameter to target parameter.</li>
+              <li>Service object invokes target method with the marshaled parameter.</li>
+              <li>Marshal target returned value and out parameter back to remote parameter.</li>
+              <li>Update the call object with exception (if any) or returned value and out parameter.</li>
+              <li>Send the call object back to caller site.</li>
+            </ol>
+
+            <p>At call site:</p>
+            <ol>
+              <li>Update the result object with the returned call object.</li>
+              <li>Marshal and update out parameters.  Marshal return value and return to caller.</li>
+            </ol>
+
+            <h3 id="method_asynchronous">Asynchronous Remote Method</h3>
+            <p>Asynchronous method call will return a future object immediately and the return value can be retrieved when the future is ready.  The life time of asynchronous method call begin when it is invoked.  The life time end when the method returned and future object associated to this call is out of scope.</p>
+            <p>When an asynchronous remote method is invoked:</p>
+
+            <p>At call site:</p>
+            <ol>
+              <li>Create a call object and a result object.  Pass call parameters into the call object.  Generate a call id and assign it to the call and result objects.</li>
+              <li>Send (serialize & transfer) the call object to remote site.</li>
+              <li>Attach the result object to a future object and return to caller.</li>
+            </ol>
+
+            <p>At remote site:</p>
+            <ol>
+              <li>Get (receive & deserialize) a call object.</li>
+              <li>Dispatch the call object to correspondent service object.</li>
+              <li>Marshal remote call parameter to target parameter.</li>
+              <li>Service object invokes target method with the marshaled parameter.</li>
+              <li>Marshal target returned value and out parameter back to remote parameter.</li>
+              <li>Update the call object with exception (if any) or returned value and out parameter.</li>
+              <li>Send the call object back to caller site.</li>
+            </ol>
+
+            <p>At call site:</p>
+            <p>If the result object is till valid (caller still holding the returned future),</p>
+            <ol>
+              <li>Update the result object with the returned call object.</li>
+              <li>Marshal and update out parameters.  Marshal return value and return to caller.</li>
+            </ol>
+            <p>Else do nothing.</p>
+
+            <h3 id="method_overload">Overload Method</h3>
+            <p>In the RI, we can declare overloaded methods with different number of parameter or different method qualifier <code>const/non-const</code>.</p>
+
+            <p>e.g.: we can put the overloaded methods below in the same remote interface.</p>
+            <pre class="prettyprint lang-cpp linenums">
+REMOTE_METHOD_C0(int, test)
+REMOTE_METHOD_M0(int, test)
+REMOTE_METHOD_M1(void, test, int)
+REMOTE_METHOD_M2(string, test, int, string)</pre>
+
+            <p>Method with same number of parameter and same qualifier will cause compilation error.  The overloaded methods below will cause compile error if they are in the same remote class.</p>
+            <pre class="prettyprint lang-cpp linenums">
+REMOTE_METHOD_M1(void, test, int)
+REMOTE_METHOD_M1(void, test, float)</pre>
+
+            <hr>
+            <blockquote>
+              <p><strong>Note:</strong> Remote method can be set to <a href="#attribute_set_one_way"><em>one-way</em></a> mode.</p>
+            </blockquote>
+
+          </section>
+
+          <!-- Parameter -->
+          <section>
+            <h2 id="param">Parameter</h2>
+            <p>Parameter passed into a remote method can be divided to <em>marshallable</em> and <em>non-marshallable</em> type.  Marshallable type is parameter of pointer to RI class (remote pointer) or any composite type that contains remote pointer.  All marshallable type require marshalling of remote pointer.  Non-marshallable type is forwarded directly into the target method.</p>
+            <p>All parameter for remote method must be <a href="http://www.boost.org/doc/libs/1_50_0/libs/serialization/doc/serialization.html">serializable</a>.</p>
+
+            <h3 id="param_passing">Parameter Passing</h3>
+
+            <h4 id="param_pass_by_value">Pass by value</h4>
+            <p>Parameter that is passed by value must be copy constructible and copy assignable.  Non-default constructible type can also be passed by value as long as it is serializable.  Movable but non-copyable is not supported.</p>
+
+            <p>e.g.:</p>
+            <pre class="prettyprint lang-cpp linenums">
+// RI
+REMOTE_CLASS_BEGIN(rmt)                 \
+REMOTE_METHOD_M1(void, set, int)        \
+REMOTE_CLASS_END</pre>
+
+            <pre class="prettyprint lang-cpp linenums">
+// client
+...
+auto r = session.get&lt;rmt&gt;("test");
+r-&gt;set(10);</pre>
+
+            <pre class="prettyprint lang-cpp linenums">
+// server
+struct T
+{
+    void set(int i) { assert(i == 10); }
+};
+
+T t;
+server.bind&lt;rmt&gt;(&t, "test");
+...</pre>
+
+            <h4 id="param_pass_by_ptr">Pass by pointer</h4>
+            <p>When an object is passed by pointer into remote method, the object that it pointed to is sent and reconstructed (via serialization) at target side, and then the pointer to the reconstructed object is passed into the target method.  The reconstructed object is a temporary object that is valid only for the duration of the call.  It will be deleted after the target call returned.  So, pointer to this object should not be stored or deleted by the target method.  Shared pointer should be used if we want to pass pointer ownership to the target method.</p>
+            <p>Passing a null pointer into a remote method is permitted.  Except for null pointer, we must make sure pointer passed into a remote method is not dangling and must be valid for the duration of the call.</p>
+
+            <p>e.g.:</p>
+            <pre class="prettyprint lang-cpp linenums">
+// RI
+REMOTE_CLASS_BEGIN(rmt)                             \
+    REMOTE_METHOD_M1(void, increase, int&)          \
+    REMOTE_METHOD_M1(void, set, int const&)         \
+    REMOTE_METHOD_M1(void, set_obj, string const*)  \
+    REMOTE_METHOD_M1(void, update, string*)         \
+    REMOTE_ASYNC_M1(void, async_increase, int&)     \
+REMOTE_CLASS_END</pre>
+
+            <pre class="prettyprint lang-cpp linenums">
+// client
+...
+auto r = session.get&lt;rmt&gt;("test");
+
+int i = 2;
+r.increase(i);
+assert(i == 3);
+r.set(i);
+assert(i == 3);
+
+string s("hello");
+r.set_obj(&s);
+assert(s == "hello");
+r.update(&s);
+assert(s == "world");   // changed by the target method
+
+r.set_obj(0);           // ok, pass null pointer
+r.update(0);            // ok, pass null pointer
+
+string* z;              // not pointing to an object
+r.set_obj(z);           // not ok
+
+{
+    int y = 3;
+    r.async_increase(y);    // not ok, y will be out of scope
+}</pre>
+
+            <pre class="prettyprint lang-cpp linenums">
+// server
+struct T
+{
+    void increase(int& i) { assert(i == 2); ++i; }
+    void set(int const& i) { assert(i == 3); }
+
+    void set_obj(string const* s)
+    {
+        if(!s) return;
+
+        assert(*s == "hello");
+        m_store_value = *s;     // ok, copy value
+        m_store_ptr = s;        // not ok, s will be invalid after this function return
+    }
+
+    void update(string* s)
+    {
+        if(!s) return;
+
+        assert(*s == "hello");
+        *s = "world";           // ok, change the value
+    }
+
+    void async_increase(int& y) { assert(y == 3); ++y; }
+
+    string m_store_value;
+    string const* m_store_ptr;
+};
+
+T t;
+server.bind&lt;rmt&gt;(&t, "test");
+...</pre>
+
+            <h4 id="param_pass_by_ref">Pass by reference</h4>
+            <p>Parameter that is passed by reference is same as pass by pointer except that it can not be null.</p>
+
+            <h4 id="param_pass_by_container">Pass pointer by container</h4>
+            <p>When an object that contains pointer is passed as parameter, the contained pointer is sent via it's serialization method.  Any serialized pointer in a container object is valid only during the life time of the call.  Accessing this pointer after the remote call returned will yield undefined behavior.</p>
+
+            <p>e.g.:</p>
+            <pre class="prettyprint lang-cpp linenums">
+struct A
+{
+    int* m_ptr;
+
+    template&lt;typename Archive&gt;
+    void serialize(Archive& ar, unsigned int const)
+    {
+        ar & m_ptr;
+    }
+}</pre>
+
+            <pre class="prettyprint lang-cpp linenums">
+// RI
+REMOTE_CLASS_BEGIN(rmt)                                     \
+    REMOTE_METHOD_M1(void, v_in, std::vector&lt;int*&gt; const&)  \
+    REMOTE_METHOD_M1(void, v_io, std::vector&lt;int*&gt;&)        \
+    REMOTE_METHOD_M1(void, a_in, A const&)                  \
+    REMOTE_METHOD_M1(void, a_io, A&)                        \
+    REMOTE_ASYNC_M1(void, async_io, A&)                     \
+REMOTE_CLASS_END</pre>
+
+            <pre class="prettyprint lang-cpp linenums">
+// client
+int i0 = 0;
+int i1 = 1;
+int i2 = 2;
+
+std::vector&lt;int*&gt; v;
+v.push(&i0);
+v.push(&i1);
+
+A a;
+a.m_ptr = &i2;
+
+auto r = session.get&lt;rmt&gt;("test");
+
+r.v_in(v);              // ok, pass container of pointer
+assert(v.size() == 2);
+assert(v[0] == &i0);
+*v[0];                  // ok, container is not modified
+
+r.v_io(v);              // ok, pass container of pointer by ref, v will be updated
+assert(v.size() == 3);  // ok, accessing updated vector
+assert(v[0] != &i0);
+*v[0];                  // not ok, pointer is invalid after the remote call returned
+
+r.a_in(a);              // ok, pass pointer as member of class
+assert(a.m_ptr == &i2); // object is not modified
+assert(*a.m_ptr == 2);  // ok, pointer is not modified
+
+r.a_io(a);              // ok
+*a.m_ptr;               // not ok, pointer might be invalid
+
+a.m_ptr = &i2;
+{
+    remote::future&lt;void&gt; f = r.async_io(a);
+    f.wait();
+    assert(a.m_ptr != &i2);
+    assert(*a.m_ptr == 3);  // ok, pointer is keep alive by f
+}
+assert(*a.m_ptr == 3);      // not ok, f is out of scope. Pointer might not be valid
+</pre>
+
+            <pre class="prettyprint lang-cpp linenums">
+// server
+...
+struct T
+{
+    int m_i3;
+    int* m_store;
+
+    void v_in(std::vector&lt;int*&gt; const& v)
+    {
+        assert(v.size() == 2);
+        assert(*v[0] == 0); // ok
+        assert(*v[1] == 1); // ok
+        //delete v[0]       // not ok, pointer is owned by caller
+    }
+
+    void v_io(std::vector&lt;int*&gt;& v)
+    {
+        assert(v.size() == 2);
+        assert(*v[0] == 0);     // ok
+        assert(*v[1] == 1);     // ok
+
+        m_i3 = 3;
+        v.push_back(&m_i3);     // ok
+        v.push_back(new int(4); // memory leak, this pointer will not be deleted
+    }
+
+    void a_in(A const& a)
+    {
+        assert(*a.m_ptr == 2);  // ok
+        //delete a.m_ptr;       // not ok
+    }
+
+    void a_io(A& a)
+    {
+        m_i3 = 3;
+        assert(*a.m_ptr == 2);  // ok
+        m_store = a.m_ptr;      // not ok, pointer will be invalid after function return
+        a.m_ptr = &m_i3;        // ok
+    }
+
+    void async_io(A& a)
+    {
+        assert(*a.m_ptr == 2);  // ok
+        *a.m_ptr = 3;           // ok
+    }
+};
+
+T t;
+server.bind&lt;rmt&gt;(&t, "test");
+...</pre>
+
+            <blockquote>
+            <ul>
+              <li>There will be no copying if object is passed by reference.  For large object, it is more efficient to pass by const reference.</li>
+              <li>It is better to avoid passing non-remote pointer when designing IPC system because it is valid only for dereferencing to it's value in the context of remote call and not really pointing to the actual object.  To pass a pointer to target that abstractly pointing to the actual object, we should pass by remote pointer.</li>
+              <li>Avoid passing raw pointer.  Use smart pointer instead.</li>
+            </ul>
+            </blockquote>
+
+            <h3 id="param_direction">Parameter Direction</h3>
+            <p>Normally when a pointer is passed as parameter, the state of the object that it pointed to can be changed by the method either through direct value assignment or side effect of member function call.  But in the context of remote call, it is not possible to update the state of original object exactly as in normal call because the actual object that is passed into the target method is not the original object.  Further more, the meaning of the change to the original object in the context of remote call might not be same as normal call even if we can update the object state exactly.  Because of this, the semantic of parameter direction and the way parameter is update in a remote call are difference from normal call.</p>
+
+            <h4 id="param_input">Input</h4>
+            <p>Input parameter value is transferred only from caller to the target method and is never transferred back to the caller site during a remote call.  All the following are input parameters:</p>
+            <ul>
+              <li>Value type</li>
+              <li>Const reference type</li>
+              <li>Const pointer type</li>
+              <li>Reference to abstract class</li>
+              <li>Pointer to abstract class</li>
+              <li>Reference to remote interface</li>
+              <li>Pointer to remote interface</li>
+            </ul>
+
+            <h4 id="param_output">Output</h4>
+            <p>Output parameter value is transferred only from target method back to the caller during a remote call.  All the following are output parameters:</p>
+            <ul>
+              <li>Return value, reference or pointer from a remote method</li>
+              <li>Element (value or pointer) in container passed as in-out parameter after the remote method returned.</li>
+              <li>Non-const pointer data member of object passed as In-out parameter after the remote method returned.</li>
+            </ul>
+
+            <p>The pointer and reference of output parameter returned by a remote method is owned by the remote library runtime.  It will be deleted when the life time of the call ended.</p>
+
+            <blockquote>
+              <p><strong>Note:</strong></p>
+              <p>Unlike normal call, pointer in container will be pointing to difference object after the remote call returned even if the target method has not changed the container.</p>
+            </blockquote>
+
+            <h4 id="param_inout">In-out</h4>
+            <p>In-out parameter is parameter that it's value can be changed by target method.  The value of the in-out parameter is transferred from the caller to the target method and then the latest value is transferred back to the caller to update the in-out parameter.  In-out parameter must be:</p>
+            <ul>
+              <li>pointer or reference type</li>
+              <li>assignable or swapable type</li>
+              <li>not const type</li>
+              <li>not abstract class</li>
+              <li>not remote interface</li>
+            </ul>
+
+            <!-- special param type -->
+            <h3 id="param_special_type">Special Type</h3>
+
+            <h4 id="param_special_primitive">primitive type &amp; enum</h4>
+            <p>Boost serialization library has forbidden the serialization of pointer to primitive type because of some reasons that is valid in the context of persisting object to archive.  But in the context of serialization for data transferred as in remote method invocation, serialization of pointer to primitive type is required.  In order to workaround this limitation, we have to apply the <code>REMOTE_SERIALIZE_PRIMITIVE</code> macro to all primitive type that is passed as pointer or reference.  Remote library has already apply this macro to some common primitive types.  We have to apply this macro for project specific primitive type like <code>enum</code> in our code.</p>
+
+            <p>e.g.:</p>
+            <pre class="prettyprint lang-cpp linenums">
+enum my_enum {...};
+
+REMOTE_SERIALIZE_PRIMITIVE(my_float, my_float_ptr)
+REMOTE_SERIALIZE_PRIMITIVE(my_enum, my_enum_ptr)</pre>
+
+            <h4 id="param_special_shared_ptr">shared_ptr &amp; weak_ptr</h4>
+            <p>Parameter can be passed by <code>boost::shared_ptr</code> or <code>boost::weak_ptr</code>.  It has same meaning as passing by raw pointer except that it will be managed automatically.  It is recommended to avoid raw pointer parameter designing for distributed system with this library.</p>
+
+            <blockquote>
+              <p><strong>Note:</strong> <code>std::shared_ptr</code> and <code>std::weak_ptr</code> are not supported.</p>
+            </blockquote>
+
+            <h4 id="param_special_unique_ptr">unique_ptr</h4>
+            <p><code>unique_ptr</code> is not supported.</p>
+
+            <blockquote>
+              <p><strong>Rationale:</strong></p>
+              <p>Part of the reason is because it is currently not supported by boost library and boost.serialization.</p>
+              <p>Another more concrete reason is the question of:</p>
+              <ul>
+                <li><em>What is the meaning of passing unique_ptr of RI type in the context of remote call?</em></li>
+              </ul>
+              <p>The same question can also be applied to reason of not supporting bind and get unique_ptr.</p>
+            </blockquote>
+
+            <!-- remote pointer -->
+            <h3 id="param_remote_ptr">Remote Pointer</h3>
+            <p>Remote pointer is refer to a any pointer to a remote interface.  Remote pointer is a special kind of pointer that can be passed around between the connected sessions and it is still pointing to it's associated service, where calling a method of that pointer will make a remote call it's target object.  To realize this, the remote library runtime needs to perform pointer marshalling when it receives a remote pointer or any composite type that contains remote pointer.  All types that require marshalling are referred as <em>marshallable</em> type.</p>
+
+            <!-- marshal remote pointer -->
+            <h4 id="param_pointer_marshal">Marshal Remote Pointer</h4>
+            <p>Marshalling happen when a remote pointer is passed as parameter to a remote method.  When the pointer is sent to the called site, remote library runtime will perform marshalling before passing it to the target method.  The marshalling process will to convert the remote pointer to another remote pointer that is valid locally at the called site.  It will also perform validation to the remote pointer such as:</p>
+
+            <ul>
+              <li>whether the remote pointer is valid in the context of target method.</li>
+              <li>whether the associated service binding still exist.</li>
+              <li>whether the target pointer is still available.</li>
+              <li>etc.</li>
+            </ul>
+
+            <blockquote>
+              <p><strong>Note:</strong></p>
+              <p>A remote method call will throw <code>remote_error</code> with error code <code>remote_param_error</code> if the marshalling failed.</p>
+            </blockquote>
+
+            <p>Code fragment below illustrate remote pointer passing.</p>
+
+            <p>RI that pass as parameter</p>
+            <pre class="prettyprint lang-cpp linenums">
+REMOTE_CLASS_BEGIN(remote_param)                \
+REMOTE_METHOD_M1(void, method_a, int)           \
+REMOTE_CLASS_END</pre>
+
+            <p>another RI with method that take pointer to remote_param as parameter</p>
+            <pre class="prettyprint lang-cpp linenums">
+#include "remote_param.hpp"
+...
+REMOTE_CLASS_BEGIN(remote_type)                 \
+REMOTE_METHOD_M1(void, method_b, remote_param*) \
+REMOTE_CLASS_END</pre>
+
+            <p>target class with method that take pointer to remote_param as parameter</p>
+            <pre class="prettyprint lang-cpp linenums">
+class target
+{
+    void method_b(remote_param*);
+};</pre>
+
+            <p>When the <code>target</code> class bind to <code>remote_type</code>, remote library will instantiate code (at compile time) to marshal the <code>remote_param</code> parameter.  A remote pointer associated to a service from either local or remote site can also be passed as parameter.</p>
+
+            <!-- marshal remote container -->
+            <h4 id="param_container_marshal">Marshal Remote Container</h4>
+
+            <p>Remote library runtime can also marshal containers that contain marshallable object.</p>
+            <pre class="prettyprint lang-cpp linenums">
+// remote library runtime can marshal remote pointer in container below.
+
+list&lt;boost::weak_ptr&lt;remote_param&gt;&gt;
+vector&lt;boost::shared_ptr&lt;remote_param&gt;&gt;
+
+pair&lt;int, remote_param*&gt;
+pair&lt;list&lt;remote_param*&gt;, vector&lt;remote_param*&gt;&gt;
+
+set&lt;remote_param*&gt;
+map&lt;remote_param*, remote_param*&gt;
+
+boost::array&lt;remote_param*, 10&gt;</pre>
+
+            <p>The marshaller header file for the container must be included to the RI definition file.</p>
+            <pre class="prettyprint lang-cpp linenums">
+#include &lt;remote/utility.hpp&gt;   // for std::pair
+#include &lt;remote/vector.hpp&gt;    // for std::vector
+#include &lt;remote/list.hpp&gt;      // for std::list
+#include &lt;remote/set.hpp&gt;       // for std::set
+#include &lt;remote/map.hpp&gt;       // for std::map
+#include &lt;remote/array.hpp&gt;     // for boost::array</pre>
+
+            <p>e.g.:</p>
+            <pre class="prettyprint lang-cpp linenums">
+#include "remote_param.hpp"
+
+#include &lt;remote/idl.hpp&gt;
+#include &lt;remote/vector.hpp&gt;
+#include &lt;remote/list.hpp&gt;
+...
+REMOTE_CLASS_BEGIN(remote_type)                                             \
+REMOTE_METHOD_M1(list&lt;remote_param*&gt;, method_b, vector&lt;remote_param*&gt;)      \
+REMOTE_CLASS_END
+...</pre>
+
+            <blockquote>
+              <p><strong>Note:</strong></p>
+              <p>When including header file of RI into another RI header file, we need to include it again in the implementation file before the <code>REMOTE_IMPLEMENT CLASS</code> definition.  For example in the <code>remete_type.cpp</code> file:</p>
+              <pre class="prettyprint lang-cpp linenums">
+#include "remote_param.hpp"     // include this file again here
+
+#define REMOTE_IMPLEMENT_CLASS remote_type
+#include &lt;remote/bindings/text_serializer.hpp&gt;
+#include "remote_type.hpp"</pre>
+            </blockquote>
+
+          </section>
+
+          <!-- Exception -->
+          <section>
+            <!-- Exception & error -->
+            <h2 id="exception">Exception &amp; Error</h2>
+            <p>When calling a remote method, error can occur at different part of the remote library sub-system.  All exceptions thrown from remote library are derived from <code>remote::exception</code> and <code>std::exception</code>.  Depending on the error source, the library throws different kind of exception as described by the table below:</p>
+            <table class="table">
+              <tr><th>Exception</th><th>Description</th></tr>
+              <tr><td>remote_error</td><td>Error from core module.</td></tr>
+              <tr><td>archive_error</td><td>Error from serializer module.</td></tr>
+              <tr><td>system_error</td><td>Error from transport module.</td></tr>
+              <tr><td>target_error</td><td>Error from target method</td></tr>
+              <tr><td>target_std_error</td><td>Target method has thrown a std::exception.  Inherit target_error.</td></tr>
+              <tr><td>target_unknown_error</td><td>Target method has thrown an exception of type unknown to remote library.  Inherit target error.</td></tr>
+              <tr><td>user defined error</td><td>User defined target exception is thrown by target method.  Inherit target_error.</td></tr>
+            </table>
+
+            <!-- target error -->
+            <h3 id="target_error">Target Error</h3>
+            <p>When target method throws an exception, the remote library runtime will catch the exception and transport it back to the caller.</p>
+
+            <p>e.g.:</p>
+           <pre class="prettyprint lang-cpp linenums">
+// server code
+class target
+{
+public:
+    void method_b()
+    {
+        // throw error at server side
+        throw std::runtime_error("exception from target method");
+    }
+};
+
+target t;
+remote::server server;
+
+server.bind&lt;remote_type&gt;(&t, "target");
+...</pre>
+
+           <pre class="prettyprint lang-cpp linenums">
+// client code
+remote::session session;
+auto rmt = session.get&lt;remote_type&gt;("target");
+
+try
+{
+    rmt->method_b();
+}
+catch(remote::target_std_error& e)
+{
+    std::cout &gt;&gt; e.what();  // will print "exception from target method"
+}</pre>
+
+            <!-- user defined error -->
+            <h3 id="user_defined_error">User defined error</h3>
+            <p>User can create custom exception class that can be catch by remote call.  All user defined exception must fulfill the conditions below:</p>
+            <ul>
+              <li>All user defined target error must inherit from <code>target_error_base</code> template and <code>std::exception.</code></li>
+              <li>All user defined target error must be serializable by <code>remote::exception</code> base pointer.</li>
+            </ul>
+
+           <pre class="prettyprint lang-cpp linenums">
+// user_error.hpp
+class user_error
+: public remote::target_error_base&lt;user_error&gt;
+, public std::exception
+{
+    int m_info:
+    std::string m_what;
+
+    char const* what() const BOOST_NOEXCEPT;
+
+    template&lt;typename Archive&gt;
+    void serialize(Archive& ar, unsigned int const version)
+    {
+        boost::serialization::base_object&lt;remote::exception&gt;(*this);
+        ar & boost::serialization::make_nvp("what", m_what);
+        ar & boost::serialization::make_nvp("info", m_info);
+    }
+};
+
+BOOST_CLASS_TRACKING(user_error, boost::serialization::track_never)
+BOOST_CLASS_EXPORT_KEY(user_error)</pre>
+
+           <pre class="prettyprint lang-cpp linenums">
+// user_error.cpp
+#include "user_error.hpp"
+
+char const* user_error::what() const BOOST_NOEXCEPT
+{
+    return m_what.c_str();
+}
+
+#include &lt;remote/archive/archives.hpp&gt;
+BOOST_CLASS_EXPORT_IMPLEMENT(user_error)</pre>
+
+
+            <!-- exception_ptr -->
+            <h3 id="exception_ptr">exception_ptr</h3>
+            <p><code>exception_ptr</code> is used to transport exception from target site to caller site.  It holds pointer to the <code>remote::exception</code> class.  We can use the <code>remote::rethrow_exception</code> method to rethrow the exception held by <code>exception_ptr</code>.  To create an <code>exception_ptr</code> from a <code>remote::exception</code>, we can use the <code>remote::make_exception_ptr</code> method.</p>
+
+          </section>
+		  
+          <a class="btn btn-default navbar-btn my-next-btn" href="manual2.html">Next Part</a>
+          <a class="btn btn-default navbar-btn my-next-btn" href="documentation.html#manual">Overview</a>
+          
+		</div>
+		
+		<!-- page right sidebar -->
+		<div class="my-sidebar col-md-3" role="complementary">
+		  <div class="my-toc hidden-print affix">
+		    <ul class="nav">
+			
+			  <!-- add toc list here -->
+              <li><a href="#interface">Remote Interface</a>
+                <ul class="nav">
+                  <li><a href="#interface_definition">Defining Remote Interface</a></li>
+                  <li><a href="#interface_inheritance">Inheritance</a></li>
+                  <li><a href="#interface_implementation">Implementation File</a></li>
+                </ul>
+              </li>
+              <li><a href="#method">Remote Method</a>
+                <ul class="nav">
+                  <li><a href="#method_definition">Defining Remote Method</a></li>
+                  <li><a href="#method_synchronous">Synchronous Remote Method</a></li>
+                  <li><a href="#method_asynchronous">Asynchronous Remote Method</a></li>
+                  <li><a href="#method_overload">Overload Method</a></li>
+                </ul>
+              </li>
+              <li><a href="#param">Parameter</a>
+                <ul class="nav">
+                  <li><a href="#param_passing">Parameter Passing</a>
+                    <ul class="nav">
+                      <li><a href="#param_pass_by_value">Pass by value</a></li>
+                      <li><a href="#param_pass_by_ptr">Pass by pointer</a></li>
+                      <li><a href="#param_pass_by_ref">Pass by reference</a></li>
+                      <li><a href="#param_pass_by_container">Pass pointer by container</a></li>
+                    </ul>
+                  </li>
+                  <li><a href="#param_direction">Parameter Direction</a>
+                    <ul class="nav">
+                      <li><a href="#param_input">Input</a></li>
+                      <li><a href="#param_output">Output</a></li>
+                      <li><a href="#param_inout">In-out</a></li>
+                    </ul>
+                  </li>
+                  <li><a href="#param_special_type">Special Type</a>
+                    <ul class="nav">
+                      <li><a href="#param_special_primitive">primitive type &amp; enum</a></li>
+                      <li><a href="#param_special_shared_ptr">shared_ptr &amp; weak_ptr</a></li>
+                      <li><a href="#param_special_unique_ptr">unique_ptr</a></li>
+                    </ul>
+                  </li>
+                  <li><a href="#param_remote_ptr">Remote Pointer</a>
+                    <ul class="nav">
+                      <li><a href="#param_pointer_marshal">Marshal Remote Pointer</a></li>
+                      <li><a href="#param_container_marshal">Marshal Remote Container</a></li>
+                    </ul>
+                  </li>
+                </ul>
+              </li>
+              <li><a href="#exception">Exception &amp; Error</a>
+                <ul class="nav">
+                  <li><a href="#target_error">Target Error</a></li>
+                  <li><a href="#user_defined_error">User Defined Error</a></li>
+                  <li><a href="#exception_ptr">exception_ptr</a></li>
+                </ul>
+              </li>
+		  
+			</ul>
+		  </div>
+		</div>
+		
+	  </div>
+	</div>
+
+	<!-- footer -->
+	<hr>
+	<footer><p>&copy; Ng Kwan Ti 2013</p></footer>
+    <!-- end content -->
+	
+    <!-- js from 3rd party vendor -->
+    <script src="//ajax.googleapis.com/ajax/libs/jquery/1.10.1/jquery.min.js"></script>
+    <script>window.jQuery || document.write('<script src="js/vendor/jquery-1.10.1.min.js"><\/script>')</script>
+    <script src="//netdna.bootstrapcdn.com/bootstrap/3.0.0/js/bootstrap.min.js"></script>
+    <script>$.fn.modal || document.write('<script src="js/vendor/bootstrap.min.js"><\/script>')</script>
+    <script src="js/vendor/prettify.js"></script>
+
+    <!-- custom js -->
+    <!-- <script src="js/plugins.js"></script> <!-- custom plugin code for jquery -->
+    <script src="js/main.js"></script>
+  </body>
+</html>

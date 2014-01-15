@@ -1,0 +1,1022 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <meta name="author" content="">
+    <meta name="description" content="C++ remote user manual 2.  client/server class reference.">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- <link rel="shortcut icon" href="favicon.ico"> -->
+
+    <!-- title for this page -->
+    <title>CppRemote - User Manual 2</title>
+
+    <!-- css from 3rd party vendor -->
+    <link rel="stylesheet" href="css/vendor/bootstrap.min.css">
+    <!-- <link rel="stylesheet" href="css/vendor/bootstrap-theme.min.css"> -->
+    <link rel="stylesheet" href="css/vendor/prettify.css">
+
+    <!-- custom styles -->
+    <link rel="stylesheet" href="css/main.css">
+
+    <!-- HTML5 shim and Respond.js IE8 support of HTML5 elements and media queries -->
+    <!--[if lt IE 9]>
+      <script src="js/vendor/html5shiv.js"></script>
+      <script src="js/vendor/respond.min.js"></script>
+    <![endif]-->
+
+	<!-- Google Analytics -->
+	<script>
+      var gaProperty = 'UA-45742852-1';
+      var disableStr = 'ga-disable-' + gaProperty;
+      if (document.cookie.indexOf(disableStr + '=true') > -1) {
+        window[disableStr] = true;
+      }
+      
+	  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+	  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+	  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+	  })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+	  ga('create', gaProperty, 'cppremote.com');
+	  ga('send', 'pageview');
+	</script>
+  </head>
+  <body data-spy="scroll" data-target=".my-toc" data-offset=50>
+    <!-- begin content -->
+	<!-- top navbar -->
+	<div class="navbar navbar-fixed-top navbar-inverse" role="navigation">
+	  <div class="container">
+	    <div class="navbar-header">
+          <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </button>
+		  <a class="navbar-brand" href="www.cppremote.com">CppRemote</a>
+		</div>
+        <div class="collapse navbar-collapse">
+          <ul class="nav navbar-nav">
+            <li><a href="index.html">Home</a></li>
+            <li><a href="examples.html">Examples</a></li>
+            <li class="active"><a href="documentation.html#manual">Documentation</a></li>
+            <li><a href="download.html">Download</a></li>
+			<li><a href="forum.html">Forum</a></li>
+          </ul>
+        </div><!--/.nav-collapse -->
+	  </div><!-- container -->
+	</div><!-- top navbar -->
+
+    <!-- page content -->
+	<div class="container my-page-container">
+	  <div class="row">
+
+	    <!-- page main area -->
+		<div class="my-main col-md-7" role="main">
+
+		  <!-- add content here -->
+
+          <!-- Pool Node -->
+          <section>
+            <!-- pool node class -->
+            <h2 id="pool_node">Pool Node</h2>
+            <p>
+              Header: <code>&lt;remote/pool_node.hpp&gt;</code><br>
+              Class: <code>remote::pool_node</code>
+            </p>
+
+            <p>Pool node is a remote object pool manager.  It hosts all the known proxy and service objects.  The role of pool node is to manage life time of remote service and as a converter between target pointer and remote pointer.  Pool node is logically connected to one or more pool nodes in the distributed system.</p>
+
+            <!-- pool node member function -->
+            <h3 id="pool_node_member_function">Member Function</h3>
+            <table class="table">
+              <tr><th>Name</th><th>Description</th></tr>
+              <tr><td><a href="#pool_node_constructor">pool_node</a></td><td>Constructor.</td></tr>
+              <tr><td><a href="#pool_node_destructor">~pool_node</a></td><td>Destructor.</td></tr>
+              <tr><td><a href="#pool_node_assign">operator =</a></td><td>Move assign operator.</td></tr>
+              <tr><td><a href="#pool_node_bind">bind</a></td><td>Bind a target to remote interface and return a shared_ptr to remote interface.</td></tr>
+              <tr><td><a href="#pool_node_bind_as_raw">bind_as_raw</a></td><td>Bind a target to remote interface and return a raw remote pointer.</td></tr>
+              <tr><td><a href="#pool_node_unbind">unbind</a></td><td>Unbind a target from remote interface.</td></tr>
+              <tr><td><a href="#pool_node_unbind_all">unbind_all</a></td><td>Unbind all target from remote interface.</td></tr>
+              <tr><td><a href="#pool_node_unbind_name">unbind_name</a></td><td>Unbind a name from a named binding.</td></tr>
+              <tr><td><a href="#pool_node_target_cast">target_cast</a></td><td>Cast remote pointer to target pointer.</td></tr>
+              <tr><td><a href="#pool_node_remote_cast">remote_cast</a></td><td>Cast target pointer to remote pointer.</td></tr>
+            </table>
+
+            <!-- pool node constructor -->
+            <hr>
+            <h4 id="pool_node_constructor">Constructor</h4>
+            <pre class="prettyprint lang-cpp">
+    pool_node();
+    explicit pool_node(io_runner& runner);</pre>
+            <p>Construct a pool_node object.</p>
+
+            <p><em>parameter:</em></p>
+            <p><code>runner</code> - specify custom io_runner used in this node.</p>
+
+            <!-- pool node move constructor -->
+            <hr>
+            <h4>Move Constructor</h4>
+            <pre class="prettyprint lang-cpp">
+    pool_node(pool_node&&);</pre>
+            <p>Move construct operator.  Implemented with <em>boost.move</em> emulation library.</p>
+
+            <!-- pool node destructor -->
+            <hr>
+            <h4 id="pool_node_destructor">Destructor</h4>
+            <pre class="prettyprint lang-cpp">
+    ~pool_node();</pre>
+
+            <p>Destruct.  This will clear all created remote pointer and service binding.</p>
+
+            <!-- pool node move assign -->
+            <hr>
+            <h4 id="pool_node_assign">Move Assign</h4>
+            <pre class="prettyprint lang-cpp">
+    pool_node& operator = (pool_node&&);</pre>
+            <p>Move assign operator.  Implemented with <em>boost.move</em> emulation library.</p>
+
+            <!-- pool node bind -->
+            <hr>
+            <h4 id="pool_node_bind">bind</h4>
+            <pre class="prettyprint lang-cpp">
+    template&lt;typename Proxy, typename Target>
+    boost::shared_ptr&lt;Proxy> bind(Target* target);
+
+    template&lt;typename Proxy, typename Target>
+    boost::shared_ptr&lt;Proxy> bind(boost::weak_ptr&ltTarget> target);
+
+    template&lt;typename Proxy, typename Target>
+    boost::shared_ptr&lt;Proxy> bind(boost::shared_ptr&lt;Target> target);
+
+    template&lt;typename Proxy, typename Target>
+    boost::shared_ptr&lt;Proxy> bind(Target* target, std::string name);
+
+    template&lt;typename Proxy, typename Target>
+    boost::shared_ptr&lt;Proxy> bind(boost::weak_ptr&lt;Target> target, std::string name);
+
+    template&lt;typename Proxy, typename Target>
+    boost::shared_ptr&lt;Proxy> bind(boost::shared_ptr&lt;Target> target, std::string name);</pre>
+
+            <p>Bind a target object to a remote interface as shared_ptr.  This will create a new service if it is not already exist.  The binding will remain until user explicitly unbind it or the target object is expired in the case of weak_ptr.</p>
+            <p>When binding a raw target pointer, the caller retain the ownership of this pointer.  The remote library runtime will not delete this pointer.  Caller must make sure this object is not being deleted before unbind.</p>
+            <p>When binding a target shared_ptr, this node will keep a copy of shared_ptr.</p>
+            <p>When a name is supplied with the call, a named binding will be created where remote site can query this remote pointer with this name.  If existing the name already used by existing binding, it will be rebind to this.</p>
+
+            <p><em>parameter:</em></p>
+            <p><code>target</code> - pointer to target object</p>
+            <p><code>name</code> - name of the binding</p>
+
+            <p><em>return:</em></p>
+            <p><code>shared_ptr</code> to the remote interface class.</p>
+
+
+            <!-- pool node bind -->
+            <hr>
+            <h4 id="pool_node_bind_as_raw">bind_as_raw</h4>
+            <pre class="prettyprint lang-cpp">
+    template&lt;typename Proxy, typename Target>
+    Proxy* bind_as_raw(Target* target);
+
+    template&lt;typename Proxy, typename Target>
+    Proxy* bind_as_raw(boost::weak_ptr&ltTarget> target);
+
+    template&lt;typename Proxy, typename Target>
+    Proxy* bind_as_raw(boost::shared_ptr&lt;Target> target);
+
+    template&lt;typename Proxy, typename Target>
+    Proxy* bind_as_raw(Target* target, std::string name);
+
+    template&lt;typename Proxy, typename Target>
+    Proxy* bind_as_raw(boost::weak_ptr&lt;Target> target, std::string name);
+
+    template&lt;typename Proxy, typename Target>
+    Proxy* bind_as_raw(boost::shared_ptr&lt;Target> target, std::string name);</pre>
+
+            <p>Bind a target object to a remote interface as raw pointer.  This is same as bind but will return a raw pointer instead of shared_ptr.</p>
+
+            <p><em>parameter:</em></p>
+            <p><code>target</code> - pointer to target object</p>
+            <p><code>name</code> - name of the binding</p>
+
+            <p><em>return:</em></p>
+            <p>Raw pointer to the remote interface class.</p>
+
+            <!-- pool node unbind -->
+            <hr>
+            <h4 id="pool_node_unbind">unbind</h4>
+            <pre class="prettyprint lang-cpp">
+    template&lt;typename Proxy, typename Target>
+    void unbind(Target* target);
+
+    template&lt;typename Proxy, typename Target>
+    void unbind(boost::shared_ptr&lt;Target> target);
+
+    template&lt;typename Proxy>
+    void unbind(Proxy* proxy);
+
+    template&lt;typename Proxy>
+    void unbind(boost::shared_ptr&lt;Proxy> proxy);
+
+    void unbind(std::string name);</pre>
+
+            <p>Unbind target object from remote interface.</p>
+
+            <p><em>parameter:</em></p>
+            <p><code>proxy</code> - pointer to remote interface</p>
+            <p><code>target</code> - pointer to target object</p>
+            <p><code>name</code> - name of the binding</p>
+
+            <!-- pool node unbind_all -->
+            <hr>
+            <h4 id="pool_node_unbind_all">unbind_all</h4>
+            <pre class="prettyprint lang-cpp">
+    void unbind_all();</pre>
+            <p>Unbind all object in this node from remote interface.</p>
+
+            <!-- pool node unbind_name -->
+            <hr>
+            <h4 id="pool_node_unbind_name">unbind_name</h4>
+            <pre class="prettyprint lang-cpp">
+    void unbind_name(std::string name);</pre>
+            <p>Unbind a name from a binding.  This only remove the name from the binding.</p>
+
+            <p><em>parameter:</em></p>
+            <p><code>name</code> - name of the binding</p>
+
+            <!-- pool node target_cast -->
+            <hr>
+            <h4 id="pool_node_target_cast">target_cast</h4>
+            <pre class="prettyprint lang-cpp">
+    template&lt;typename Target, typename Proxy>
+    Target* target_cast(Proxy* proxy);
+
+    template&lt;typename Target, typename Proxy>
+    boost::shared_ptr&lt;Target> target_cast(boost::shared_ptr&lt;Proxy> proxy);
+
+    template&lt;typename Target, typename Proxy>
+    boost::weak_ptr&lt;Target> target_cast(boost::weak_ptr&lt;Proxy> proxy);</pre>
+
+            <p>Downcast a remote pointer to target pointer.  The cast will fail if the binding is not from this node or the target object has already been deleted.</p>
+
+            <p><em>parameter:</em></p>
+            <p><code>proxy</code> - pointer to remote interface</p>
+
+            <p><em>return:</em></p>
+            <p>Return pointer to target type if success.  Return null pointer or empty shared_ptr if failed.</p>
+
+
+            <!-- pool node remote_cast -->
+            <hr>
+            <h4 id="pool_node_remote_cast">remote_cast</h4>
+            <pre class="prettyprint lang-cpp">
+    template&lt;typename Proxy, typename Target>
+    Proxy* remote_cast(Target* target);
+
+    template&lt;typename Proxy, typename Target>
+    boost::shared_ptr&lt;Proxy> remote_cast(boost::shared_ptr&lt;Target> target);
+
+    template&lt;typename Proxy, typename Target>
+    boost::weak_ptr&lt;Proxy> remote_cast(boost::weak_ptr&lt;Target> target);</pre>
+
+            <p>Cast a target pointer to remote pointer.  This is same as binding a target to remote interface but this method return the same type of pointer as the target pointer.</p>
+
+            <p><em>parameter:</em></p>
+            <p><code>target</code> - pointer to target object</p>
+
+            <p><em>return:</em></p>
+            <p>Return pointer to remote interface if success.  Return null pointer or empty shared_ptr if failed.</p>
+
+          </section>
+
+          <!-- Session -->
+          <section>
+            <!-- session class -->
+            <h2 id="session">Session</h2>
+            <p>
+              Header: <code>&lt;remote/session&gt;</code><br>
+              Class: <code>remote::session</code><br>
+              Inherit: <code><a href="#pool_node">remote::pool_node</a></code>
+            </p>
+
+            <p>This class represent a connection session.  It can be used to initiate a connection to a <a href="#server">server</a>.</p>
+
+            <!-- session member type -->
+            <h3 id="session_member_type">Member Type</h3>
+            <table class="table">
+              <tr><th>Name</th><th>Description</th></tr>
+              <tr><td><a href="#session_state_t">state_t</a></td><td>enum for connection state of this session.</td></tr>
+              <tr><td><a href="#session_handler">handler</a></td><td>event handler with signature <code>void(exception_ptr)</code>.</td></tr>
+            </table>
+
+            <!-- session state_t -->
+            <hr>
+            <h4 id="session_state_t">state_t</h4>
+            <pre class="prettyprint lang-cpp">
+    enum state_t
+    {
+        stopped,
+        starting,
+        started,
+        stopping
+    };</pre>
+
+            <p>Enumerator for the state of session.  The state of session can be divided into two groups, which are:</p>
+
+            <table class="table">
+              <tr><th>State Group</th><th>Description</th></tr>
+              <tr><td>ready state<br><code>[stopped, started]</code></td><td>session is in a steady state and will not transition to any other state soon.</td></tr>
+              <tr><td>intermediate state<br><code>[starting, stopping]</code></td><td>session is not in a steady state and will transition to other state at anytime soon.</td></tr>
+            </table>
+
+            <p>Session is a state machine that transition between <code>stopped</code> and <code>started</code> state.  The state of a session can be changed by <code><a href="#session_start">start</a></code> and <code><a href="#session_stop">stop</a></code> operations initiated by user.  An <a href="#session_set_error_handler">io error event</a> triggered by transport error or disconnection from peer session can also caused a session to change state.</p>
+            <table class="table">
+              <tr><th>State</th><th>Description</th></tr>
+              <tr><td><code>stopped</code></td><td>Session is inactive.  At this state, the session is not active for remote operations.</td></tr>
+              <tr><td><code>starting</code></td><td>Session is trying to connect to a <a href="#server">server</a> and establish connection to it's peer session.  This state can transition to any of the ready state soon.</td></tr>
+              <tr><td><code>started</code></td><td>Session has established connection to it's peer session and is active.  Only at this state, the session is ready for remote operations like <a href="#session_get">get</a> and <a href="#session_get_raw">get_raw</a>.  Remote method from remote pointer returned by this session can be invoked.  In other state, any remote operation call will fail.</td></tr>
+              <tr><td><code>stopping</code></td><td>Session is transitioning to stopped state.  All pending remote call will be canceled and throw exception.  This state will transition to stopped state soon.</td></tr>
+            </table>
+
+            <!-- session handler -->
+            <hr>
+            <h4 id="session_handler">handler</h4>
+            <pre class="prettyprint lang-cpp">
+    typedef boost::function&lt;void(exception_ptr)> handler;</pre>
+
+            <p>Event handler function type.  Accept any callable function with parameter <a href="#exception_ptr">exception_ptr</a> and return void.</p>
+
+            <!-- session member type -->
+            <hr>
+            <h3 id="session_static_member">Static Member</h3>
+            <table class="table">
+              <tr><th>Name</th><th>Description</th></tr>
+              <tr><td><a href="#session_default_handler">default_handler</a></td><td>default event handler.</td></tr>
+            </table>
+
+            <!-- session default handler -->
+            <hr>
+            <h4 id="session_default_handler">default_handler</h4>
+            <pre class="prettyprint lang-cpp">
+    static void default_handler(exception_ptr) {};</pre>
+            <p>Default event handler that is an empty function.</p>
+
+            <!-- session member function -->
+            <hr>
+            <h3 id="session_member_function">Member Function</h3>
+            <table class="table">
+              <tr><th>Name</th><th>Description</th></tr>
+              <tr><td><a href="#session_constructor">session</a></td><td>Constructor.</td></tr>
+              <tr><td><a href="#session_destructor">~session</a></td><td>Destructor.</td></tr>
+              <tr><td><a href="#session_assign">operator =</a></td><td>Move assign operator.</td></tr>
+              <tr><td><a href="#session_start">start</a></td><td>Initiate connection to peer session.</td></tr>
+              <tr><td><a href="#session_stop">stop</a></td><td>Stop this session.</td></tr>
+              <tr><td><a href="#session_state">state</a></td><td>Get the connection state.</td></tr>
+              <tr><td><a href="#session_wait_for_ready">wait_for_ready</a></td><td>Wait for the connection to be ready and return the connection state.</td></tr>
+              <tr><td><a href="#session_call_timeout">call_timeout</a></td><td>Get call timeout.</td></tr>
+              <tr><td><a href="#session_set_call_timeout">set_call_timeout</a></td><td>Set call timeout.</td></tr>
+              <tr><td><a href="#session_set_error_handler">set_error_handler</a></td><td>Set event handler for the io error event.</td></tr>
+              <tr><td><a href="#session_get">get</a></td><td>Get a remote shared_ptr.</td></tr>
+              <tr><td><a href="#session_get_raw">get_raw</a></td><td>Get a remote raw pointer.</td></tr>
+              <tr><td><a href="#session_release">release</a></td><td>Release a remote pointer.</td></tr>
+            </table>
+
+            <!-- session constructor -->
+            <hr>
+            <h4 id="session_constructor">Constructor</h4>
+            <pre class="prettyprint lang-cpp">
+    session();
+    explicit session(io_runner& runner);</pre>
+
+            <p>Construct a remote session.</p>
+
+            <p><em>parameter:</em></p>
+            <p><code>runner</code> - specify custom io_runner used in this node.</p>
+
+            <!-- session move constructor -->
+            <hr>
+            <h4>Move Constructor</h4>
+            <pre class="prettyprint lang-cpp">
+    session(session&&);</pre>
+            <p>Move constructor.  Emulate move operation with <a href="http://www.boost.org/doc/libs/1_50_0/doc/html/move.html">boost.move</a>.</p>
+
+            <!-- session destructor -->
+            <hr>
+            <h4 id="session_destructor">Destructor</h4>
+            <pre class="prettyprint lang-cpp">
+    ~session();</pre>
+            <p>Destruct. Stop the session and wait for it to properly stopped before destruct.</p>
+
+            <!-- session move assign -->
+            <hr>
+            <h4 id="session_assign">Move Assign</h4>
+            <pre class="prettyprint lang-cpp">
+    session& operator = (session&&);</pre>
+            <p>Move assign.  Emulate move operation with <a href="http://www.boost.org/doc/libs/1_50_0/doc/html/move.html">boost.move</a>.</p>
+
+            <!-- session start -->
+            <hr>
+            <h4 id="session_start">start</h4>
+            <pre class="prettyprint lang-cpp">
+    void start(binding _binding, handler _handler = default_handler);</pre>
+            <p>Initiate connection to peer session.</p>
+            <p>If the session is in:</p>
+            <ul>
+              <li><code>stopped</code> state, initiate connection using the <code>_binding</code> object and cause the session to transition to <code>starting</code> state.</li>
+              <li>other state, fail with <code>operation_pending</code> error.</li>
+            </ul>
+            <p>This operation will return immediately.  The result will be sent to the <code>_handler</code> object when operation ended.<br>
+            If the operation succeed, pass an empty <code>exception_ptr</code> to the handler function.</p>
+
+            <p><em>parameter:</em></p>
+            <p><code>_binding</code> - a communication <a href="#bindings">binding</a> object to initiate connection to peer.</p>
+            <p><code>_handler</code> - event <a href="#session_handler">handler</a> to be called when this operation ended.</p>
+
+            <!-- session stop -->
+            <hr>
+            <h4 id="session_stop">stop</h4>
+            <pre class="prettyprint lang-cpp">
+    void stop(handler _handler = default_handler);</pre>
+            <p>Stop this session.</p>
+            <p>If the session is in:</p>
+            <ul>
+              <li><code>starting</code> or <code>started</code> state, stop the connection and cause the session to transition to stopping state.</li>
+              <li><code>stopping</code> state, fail with <code>operation_pending</code> error.</li>
+              <li><code>stopped</code> state, fail with <code>already_stopped</code> error.</li>
+            </ul>
+            <p>This operation will return immediately.  The result will be sent to the <code>_handler</code> object when operation ended.<br>
+            If the operation succeed, pass an empty <code>exception_ptr</code> to the handler function.</p>
+
+            <p><em>parameter:</em></p>
+            <p><code>_handler</code> - event <a href="#session_handler">handler</a> to be called when this operation ended.</p>
+
+            <!-- session state -->
+            <hr>
+            <h4 id="session_state">state</h4>
+            <pre class="prettyprint lang-cpp">
+    state_t state() const;</pre>
+            <p>Return the session current state.</p>
+
+            <p><em>return:</em></p>
+            <p>Current <a href="#session_state_t">state</a>.</p>
+
+            <!-- session wait_for_ready -->
+            <hr>
+            <h4 id="session_wait_for_ready">wait_for_ready</h4>
+            <pre class="prettyprint lang-cpp">
+    state_t wait_for_ready() const;</pre>
+            <p>Wait for the session to transition to ready state and return the current ready state of the session.</p>
+
+            <p><em>return:</em></p>
+            <p>Current <a href="#session_state_t">ready state</a> of the session.</p>
+
+            <!-- session call_timeout -->
+            <hr>
+            <h4 id="session_call_timeout">call_timeout</h4>
+            <pre class="prettyprint lang-cpp">
+    boost::chrono::milliseconds call_timeout() const;</pre>
+            <p>Get the remote call timeout value.  Call timeout specify the maximum time duration to wait for a remote call result.  This setting will affect all remote pointer to be returned by <code><a href="#session_get">get</a></code> and <code><a href="#session_get_raw">get_raw</a></code> operation.</p>
+
+            <p><em>return:</em></p>
+            <p>Remote call timeout setting of this session.</p>
+
+            <!-- session set_call_timeout -->
+            <hr>
+            <h4 id="session_set_call_timeout">set_call_timeout</h4>
+            <pre class="prettyprint lang-cpp">
+    void set_call_timeout(boost::chrono::milliseconds timeout);</pre>
+            <p>Set the remote call timeout value.</p>
+
+            <p><em>parameter:</em></p>
+            <p><code>timeout</code> - timeout duration in milliseconds.</p>
+
+            <!-- session set_error_handler -->
+            <hr>
+            <h4 id="session_set_error_handler">set_error_handler</h4>
+            <pre class="prettyprint lang-cpp">
+    void set_error_handler(handler _handler);</pre>
+            <p>Set the io error handler.  Io error is normally caused by read error or disconnection from transport layer.</p>
+
+            <p><em>parameter:</em></p>
+            <p><code>_handler</code> - event <a href="#session_handler">handler</a> to be called.</p>
+
+
+            <!-- session get -->
+            <hr>
+            <h4 id="session_get">get</h4>
+            <pre class="prettyprint lang-cpp">
+    template&lt;typename Proxy>
+    boost::shared_ptr&lt;Proxy> get(std::string name, bool cache = false);</pre>
+
+            <p>Get a remote pointer from session.  This operation require that a logical connection to the peer node is established in order to resolve the remote object name to id.</p>
+
+            <p><em>parameter:</em></p>
+            <p><code>name</code> - name of the remote pointer <a href="#pool_node_bind">binding</a>.</p>
+            <p><code>cache</code> - specify whether to resolve the <code>name</code> from cache.  If this is set to false, it will force the session to request it's peer node to resolve the <code>name</code> to id.</p>
+
+            <p><em>return:</em></p>
+            <p>If succeed, return a remote pointer to the named object.<br>If failed, return empty shared_ptr.</p>
+
+
+            <!-- session get_raw -->
+            <hr>
+            <h4 id="session_get_raw">get_raw</h4>
+            <pre class="prettyprint lang-cpp">
+    template&lt;typename Proxy>
+    Proxy* get_raw(std::string name, bool cache = false);</pre>
+
+            <p>Get a remote pointer from session.  This operation require that a logical connection to the peer node is established in order to resolve the remote object name to id.</p>
+            <p>A pointer returned by this function is owned by this node.  Multiple call to this function with same name should normally get pointer to the same proxy.  Use the <a href="#session_release">release</a> function to release each pointer returned by this function.</p>
+
+            <blockquote>
+              <p><strong>Note:</strong></p>
+              <p>Avoid using raw pointer if possible because it is difficult to manage the resource.  The library rely on user to call <code><a href="#session_release">release</a></code> to tell the node whether this proxy can be deleted or not.</p>
+            </blockquote>
+
+            <p><em>parameter:</em></p>
+            <p><code>name</code> - name of the remote pointer <a href="#pool_node_bind">binding</a>.</p>
+            <p><code>cache</code> - specify whether to resolve the <code>name</code> from cache.  If this is set to false, it will force the session to request it's peer node to resolve the <code>name</code> to id.</p>
+
+            <p><em>return:</em></p>
+            <p>If succeed, return a remote pointer to the named object.<br>If failed, return 0.</p>
+
+            <!-- session release -->
+            <hr>
+            <h4 id="session_release">release</h4>
+            <pre class="prettyprint lang-cpp">
+    template&lt;typename Proxy>
+    void release(Proxy* _proxy);</pre>
+            <p>Tell that raw pointer to this proxy is not longer used.  Do not access any raw pointer to this proxy after this call.  Even if the raw pointer is acquired from different call to <a href="#session_get_raw">get_raw</a>.</p>
+
+            <p><em>parameter:</em></p>
+            <p><code>_proxy</code> - the remote pointer to be released.</p>
+
+          </section>
+
+          <!-- Server -->
+          <section>
+            <!-- server class -->
+            <h2 id="server">Server</h2>
+            <p>
+              Header: <code>&lt;remote/server&gt;</code><br>
+              Class: <code>remote::server</code><br>
+              Inherit: <code><a href="#pool_node">remote::pool_node</a></code>
+            </p>
+            <p>A class to listen to an endpoint and accept connection from <a href="#session">session</a>.</p>
+
+            <!-- server member type -->
+            <h3 id="server_member_type">Member Type</h3>
+            <table class="table">
+              <tr><th>Name</th><th>Description</th></tr>
+              <tr><td><a href="#server_state_t">state_t</a></td><td>enum for connection state of this server.</td></tr>
+              <tr><td><a href="#server_handler">handler</a></td><td>event handler with signature <code>void(exception_ptr)</code>.</td></tr>
+              <tr><td><a href="#server_accept_handler">accept_handler</a></td><td>event handler with signature <code>void(exception_ptr, session&)</code>.</td></tr>
+            </table>
+
+            <!-- server state_t -->
+            <hr>
+            <h4 id="server_state_t">state_t</h4>
+            <pre class="prettyprint lang-cpp">
+    enum state_t
+    {
+        stopped,
+        starting,
+        started,
+        stopping
+    };</pre>
+
+            <p>Enumerator for the state of server.  The state of server can be divided into two groups, which are:</p>
+
+            <table class="table">
+              <tr><th>State Group</th><th>Description</th></tr>
+              <tr><td>ready state<br><code>[stopped, started]</code></td><td>server is in a steady state and will not transition to any other state soon.</td></tr>
+              <tr><td>intermediate state<br><code>[starting, stopping]</code></td><td>server is not in a steady state and will transition to other state at anytime soon.</td></tr>
+            </table>
+
+            <p>Server is a state machine that transition between <code>stopped</code> and <code>started</code> state.  The state of a server can be changed by <code><a href="#server_start">start</a></code> and <code><a href="#server_stop">stop</a></code> operations initiated by user.  An <a href="#server_set_accept_handler">io error event</a> triggered by transport error can also cause a server to change state.</p>
+            <table class="table">
+              <tr><th>State</th><th>Description</th></tr>
+              <tr><td><code>stopped</code></td><td>Server is inactive.  At this state, the server is not actively accepting connection.</td></tr>
+              <tr><td><code>starting</code></td><td>Server is trying to start listening to a transport end point.  This state can transition to any of the ready state soon.</td></tr>
+              <tr><td><code>started</code></td><td>Server is listening to an end point and is actively accepting connection.  Only at this state, a session can successfully establish connection to this server.</td></tr>
+              <tr><td><code>stopping</code></td><td>Server is transitioning to stopped state.  Server will stop accepting connection and all accepted session will be stopped.  This state will transition to stopped state soon.</td></tr>
+            </table>
+
+            <!-- server handler -->
+            <hr>
+            <h4 id="server_handler">handler</h4>
+            <pre class="prettyprint lang-cpp">
+    typedef boost::function&lt;void(exception_ptr)> handler;</pre>
+
+            <p>Event handler function type.  Accept any callable function with parameter <a href="#exception_ptr">exception_ptr</a> and return void.</p>
+
+            <!-- server accept handler -->
+            <hr>
+            <h4 id="server_accept_handler">accept_handler</h4>
+            <pre class="prettyprint lang-cpp">
+    typedef boost::function&lt;void(exception_ptr, session&)> accept_handler;</pre>
+
+            <p>Event handler function type.  Accept any callable function with parameter <a href="#exception_ptr">exception_ptr</a>, <a href="#session">session&amp;</a> and return void.  Handler should always check the exception_ptr before accessing the session object.  If exception_ptr is not empty, the session object is invalid and accessing it will cause undefined behavior.</p>
+
+            <!-- server member type -->
+            <hr>
+            <h3 id="server_static_member">Static Member</h3>
+            <table class="table">
+              <tr><th>Name</th><th>Description</th></tr>
+              <tr><td><a href="#server_default_handler">default_handler</a></td><td>default event handler.</td></tr>
+              <tr><td><a href="#server_default_accept_handler">default_accept_handler</a></td><td>default accept event handler.</td></tr>
+            </table>
+
+            <!-- server default handler -->
+            <hr>
+            <h4 id="server_default_handler">default_handler</h4>
+            <pre class="prettyprint lang-cpp">
+    static void default_handler(exception_ptr) {};</pre>
+            <p>Default event handler that is an empty function.</p>
+
+            <!-- server default accept handler -->
+            <hr>
+            <h4 id="server_default_accept_handler">default_accept_handler</h4>
+            <pre class="prettyprint lang-cpp">
+    static void default_accept_handler(exception_ptr, session&) {};</pre>
+            <p>Default event handler that is an empty function.</p>
+
+            <!-- server member function -->
+            <hr>
+            <h3 id="server_member_function">Member Function</h3>
+            <table class="table">
+              <tr><th>Name</th><th>Description</th></tr>
+              <tr><td><a href="#server_constructor">session</a></td><td>Constructor.</td></tr>
+              <tr><td><a href="#server_destructor">~session</a></td><td>Destructor.</td></tr>
+              <tr><td><a href="#server_assign">operator =</a></td><td>Move assign operator.</td></tr>
+              <tr><td><a href="#server_start">start</a></td><td>Start listening to an end point and accept connection.</td></tr>
+              <tr><td><a href="#server_stop">stop</a></td><td>Stop this server.</td></tr>
+              <tr><td><a href="#server_state">state</a></td><td>Get the connection state.</td></tr>
+              <tr><td><a href="#server_wait_for_ready">wait_for_ready</a></td><td>Wait for the connection to be ready and return the connection state.</td></tr>
+              <tr><td><a href="#server_set_accept_handler">set_accept_handler</a></td><td>Set event handler for accept and io error event.</td></tr>
+            </table>
+
+            <!-- server constructor -->
+            <hr>
+            <h4 id="server_constructor">Constructor</h4>
+            <pre class="prettyprint lang-cpp">
+    server();
+    explicit server(io_runner& runner);</pre>
+
+            <p>Construct a remote server.</p>
+
+            <p><em>parameter:</em></p>
+            <p><code>runner</code> - specify custom io_runner used in this node.</p>
+
+            <!-- server move constructor -->
+            <hr>
+            <h4>Move Constructor</h4>
+            <pre class="prettyprint lang-cpp">
+    server(server&&);</pre>
+            <p>Move constructor.  Emulate move operation with <a href="http://www.boost.org/doc/libs/1_50_0/doc/html/move.html">boost.move</a>.</p>
+
+            <!-- server destructor -->
+            <hr>
+            <h4 id="server_destructor">Destructor</h4>
+            <pre class="prettyprint lang-cpp">
+    ~server();</pre>
+            <p>Destruct. Stop the server and wait for it to properly stopped before destruct.</p>
+
+            <!-- server move assign -->
+            <hr>
+            <h4 id="server_assign">Move Assign</h4>
+            <pre class="prettyprint lang-cpp">
+    server& operator = (server&&);</pre>
+            <p>Move assign.  Emulate move operation with <a href="http://www.boost.org/doc/libs/1_50_0/doc/html/move.html">boost.move</a>.</p>
+
+            <!-- server start -->
+            <hr>
+            <h4 id="server_start">start</h4>
+            <pre class="prettyprint lang-cpp">
+    void start(binding _binding, handler _handler = default_handler);</pre>
+            <p>Start listening to an end point and accept connection.</p>
+            <p>If the server is in:</p>
+            <ul>
+              <li><code>stopped</code> state, initiate connection using the <code>_binding</code> object and cause the server to transition to <code>starting</code> state.</li>
+              <li>other state, fail with <code>operation_pending</code> error.</li>
+            </ul>
+            <p>This operation will return immediately.  The result will be sent to the <code>_handler</code> object when operation ended.<br>
+            If the operation succeed, pass an empty <code>exception_ptr</code> to the handler function.</p>
+
+            <p><em>parameter:</em></p>
+            <p><code>_binding</code> - a communication <a href="#bindings">binding</a> object to accept connection.</p>
+            <p><code>_handler</code> - event <a href="#server_handler">handler</a> to be called when this operation ended.</p>
+
+            <!-- server stop -->
+            <hr>
+            <h4 id="server_stop">stop</h4>
+            <pre class="prettyprint lang-cpp">
+    void stop(handler _handler = default_handler);</pre>
+            <p>Stop this server.</p>
+            <p>If the server is in:</p>
+            <ul>
+              <li><code>starting</code> or <code>started</code> state, stop accepting connection and cause the server to transition to stopping state.</li>
+              <li><code>stopping</code> state, fail with <code>operation_pending</code> error.</li>
+              <li><code>stopped</code> state, fail with <code>already_stopped</code> error.</li>
+            </ul>
+            <p>This operation will return immediately.  The result will be sent to the <code>_handler</code> object when operation ended.<br>
+            If the operation succeed, pass an empty <code>exception_ptr</code> to the handler function.</p>
+
+            <p><em>parameter:</em></p>
+            <p><code>_handler</code> - event <a href="#session_handler">handler</a> to be called when this operation ended.</p>
+
+            <!-- server state -->
+            <hr>
+            <h4 id="server_state">state</h4>
+            <pre class="prettyprint lang-cpp">
+    state_t state() const;</pre>
+            <p>Return the server current state.</p>
+
+            <p><em>return:</em></p>
+            <p>Current <a href="#session_state_t">state</a>.</p>
+
+            <!-- server wait_for_ready -->
+            <hr>
+            <h4 id="server_wait_for_ready">wait_for_ready</h4>
+            <pre class="prettyprint lang-cpp">
+    state_t wait_for_ready() const;</pre>
+            <p>Wait for the server to transition to ready state and return the current ready state of the server.</p>
+
+            <p><em>return:</em></p>
+            <p>Current <a href="#session_state_t">ready state</a> of the server.</p>
+
+            <!-- server set_error_handler -->
+            <hr>
+            <h4 id="server_set_accept_handler">set_accept_handler</h4>
+            <pre class="prettyprint lang-cpp">
+    void set_error_handler(handler _handler);</pre>
+            <p>Set the accept handler.  This handler is called when server successfully accepted a session or io error occurred in transport layer.</p>
+
+            <p><em>parameter:</em></p>
+            <p><code>_handler</code> - event <a href="#server_accept_handler">accept_handler</a> to be called.</p>
+            <hr>
+          </section>
+
+		  <!-- Future -->
+		  <section>
+		  </section>
+
+		  <!-- Shared Future -->
+		  <section>
+		  </section>
+		  
+          <!-- Attribute -->
+          <section>
+            <h2 id="attribute">Attribute</h2>
+            <p>
+              Header: <code>&lt;remote/attribute.hpp></code><br>
+              Class: <code>remote::attribute</code>
+            </p>
+            <p>Attribute class provide access to the meta data of remote pointer.</p>
+
+            <h3 id="attribute_static_member">Static Member</h3>
+            <table class="table">
+              <tr><th>Name</th><th>Description</th></tr>
+              <tr><td>set_one_way</td><td>Static function to set a remote pointer to <em>one-way</em> mode.</td></tr>
+              <tr><td>get_one_way</td><td>Static function to get the <em>one-way</em> mode of a remote pointer.</td></tr>
+            </table>
+
+            <h4 id="attribute_set_one_way">set_one_way</h4>
+            <pre class="prettyprint lang-cpp">
+    static void set_one_way(proxy* _proxy, bool mode);
+    static void set_one_way(boost::shared_ptr&lt;proxy> _proxy, bool mode);</pre>
+            <p>Static function to set a remote pointer to <em>one-way</em> mode.  In one-way mode, the remote call will never return.  Accessing the result of non-void remote method in one-way mode will throw <code>no_result</code> error.</p>
+            <p><em>parameter:</em></p>
+            <p><code>_proxy</code> - remote pointer to access.</p>
+            <p><code>mode</code> - true to set to one-way mode and false to set to normal 2 way mode.</p>
+
+            <h4 id="attribute_get_one_way">get_one_way</h4>
+            <pre class="prettyprint lang-cpp">
+    static bool get_one_way(proxy* _proxy);
+    static bool get_one_way(boost::shared_ptr&lt;proxy> _proxy);</pre>
+            <p>Static function to get the <em>one-way</em> mode of a remote pointer.</p>
+            <p><em>parameter:</em></p>
+            <p><code>_proxy</code> - remote pointer to be set</p>
+            <p><em>return:</em></p>
+            <p>One way mode of the remote pointer</p>
+
+          </section>
+
+          <!-- Io Runner -->
+          <section>
+
+            <section>
+            <h2 id="io_runner">Io Runner</h2>
+            <p>
+              Header: <code>&lt;remote/io_runner.hpp></code><br>
+              Class: <code>remote::io_runner</code><br>
+              Inherit: <code>boost::noncopyable</code>
+            </p>
+            <p>Remote library run asynchronous tasks in it's own threads.  It uses <code>io_service</code> from <a href="http://www.boost.org/doc/libs/1_50_0/doc/html/boost_asio.html">boost.asio</a> as thread pool to schedule task. Thread and <code>io_service</code> are managed by <code>io_runner</code> class.  By default, the <a href="#global_static_member">global io_runner</a> is used but user can use it's own <code>io_runner</code> to replace the global one.</p>
+            </section>
+
+            <section>
+            <h3 id="io_runner_static_member">Static Member</h3>
+            <table class="table">
+              <tr><th>Name</th><th>Description</th></tr>
+              <tr><td>max</td><td>Place holder for maximum concurrency.</td></tr>
+            </table>
+            </section>
+
+            <section>
+            <h3 id="io_runner_member_function">Member Function</h3>
+            <table class="table">
+              <tr><th>Name</th><th>Description</th></tr>
+              <tr><td><a href="#io_runner_constructor">io_runner</a></td><td>Constructor.</td></tr>
+              <tr><td><a href="#io_runner_destructor">~io_runner</a></td><td>Destructor.</td></tr>
+              <tr><td><a href="#io_runner_get_io_service">get_io_service</a></td><td>Get the internal io_service.</td></tr>
+            </table>
+            </section><hr>
+
+            <section>
+            <h4 id="io_runner_constructor">Constructor</h4>
+            <pre class="prettyprint lang-cpp">
+    explicit io_runner(std::size_t concurrency);</pre>
+            <p>Construct an <code>io_runner</code> and specify how many thread to create.</p>
+
+            <p><em>parameter:</em></p>
+            <p><code>concurrency</code> - specify the number of thread to create. Use <code>io_runner::max</code> to specify maximum concurrency.</p>
+            </section><hr>
+
+            <section>
+            <h4 id="io_runner_destructor">Destructor</h4>
+            <pre class="prettyprint lang-cpp">
+    ~io_runner();</pre>
+            <p>Destructor.  Join all created thread before destruct.</p>
+            </section><hr>
+
+            <section>
+            <h4 id="io_runner_get_io_service">get_io_service</h4>
+            <pre class="prettyprint lang-cpp">
+    boost::asio::io_service& get_io_service();</pre>
+            <p>Get it's internal <code>io_service</code>.</p>
+            <p><em>return:</em></p>
+            <p>Reference to the internal <code>io_service</code>.</p>
+            </section><hr>
+
+          </section>
+
+          <!-- Global -->
+          <section>
+            <h2 id="global">Global</h2>
+            <p>
+              Header: <code>&lt;remote/global.hpp></code><br>
+              Class: <code>remote::global</code>
+            </p>
+            <p>Class to access the process scope static object.</p>
+
+            <h3 id="global_static_member">Static Member</h3>
+            <table class="table">
+              <tr><th>Name</th><th>Description</th></tr>
+              <tr><td>remote::io_runner& io_runner(std::size_t)</td><td>Static function to get the global <code>io_runner</code> object.  Set the value to be passed to constructor of  global <code>io_runner</code> on first access.</td></tr>
+            </table>
+
+          </section>
+
+		  
+          <a class="btn btn-default navbar-btn my-next-btn" href="manual3.html">Next Part</a>
+          <a class="btn btn-default navbar-btn my-next-btn" href="documentation.html#manual">Overview</a>
+          <a class="btn btn-default navbar-btn my-next-btn" href="manual1.html">Prev Part</a>
+		</div>
+		
+		<!-- page right sidebar -->
+		<div class="my-sidebar col-md-3" role="complementary">
+		  <div class="my-toc hidden-print affix">
+		    <ul class="nav">
+			
+			  <!-- add toc list here -->
+              <li><a href="#pool_node">Pool Node</a>
+                <ul class="nav">
+                  <li><a href="#pool_node_member_function">Member Function</a>
+                    <ul class="nav">
+                      <li><a href="#pool_node_constructor">pool_node</a></li>
+                      <li><a href="#pool_node_destructor">~pool_node</a></li>
+                      <li><a href="#pool_node_assign">operator =</a></li>
+                      <li><a href="#pool_node_bind">bind</a></li>
+                      <li><a href="#pool_node_bind_as_raw">bind_as_raw</a></li>
+                      <li><a href="#pool_node_unbind">unbind</a></li>
+                      <li><a href="#pool_node_unbind_all">bind_all</a></li>
+                      <li><a href="#pool_node_unbind_name">bind_name</a></li>
+                      <li><a href="#pool_node_target_cast">target_cast</a></li>
+                      <li><a href="#pool_node_remote_cast">remote_cast</a></li>
+                    </ul>
+                  </li>
+                </ul>
+              </li>
+              <li><a href="#session">Session</a>
+                <ul class="nav">
+                  <li><a href="#session_member_type">Member Type</a>
+                    <ul class ="nav">
+                      <li><a href="#session_state_t">state_t</a></li>
+                      <li><a href="#session_handler">handler</a></li>
+                    </ul>
+                  </li>
+                  <li><a href="#session_static_member">Static Member</a>
+                    <ul class ="nav">
+                      <li><a href="#session_default_handler">default_handler</a></li>
+                    </ul>
+                  </li>
+                  <li><a href="#session_member_function">Member Function</a>
+                    <ul class ="nav">
+                      <li><a href="#session_constructor">session</a></li>
+                      <li><a href="#session_destructor">~session</a></li>
+                      <li><a href="#session_assign">operator =</a></li>
+                      <li><a href="#session_start">start</a></li>
+                      <li><a href="#session_stop">stop</a></li>
+                      <li><a href="#session_state">state</a></li>
+                      <li><a href="#session_wait_for_ready">wait_for_ready</a></li>
+                      <li><a href="#session_call_timeout">call_timeout</a></li>
+                      <li><a href="#session_set_call_timeout">set_call_timeout</a></li>
+                      <li><a href="#session_set_error_handler">set_error_handler</a></li>
+                      <li><a href="#session_get">get</a></li>
+                      <li><a href="#session_get_raw">get_raw</a></li>
+                      <li><a href="#session_release">release</a></li>
+                    </ul>
+                  </li>
+                </ul>
+              </li>
+              <li><a href="#server">Server</a>
+                <ul class="nav">
+                  <li><a href="#server_member_type">Member Type</a>
+                    <ul class ="nav">
+                      <li><a href="#server_state_t">state_t</a></li>
+                      <li><a href="#server_handler">handler</a></li>
+                      <li><a href="#server_accept_handler">accept_handler</a></li>
+                    </ul>
+                  </li>
+                  <li><a href="#server_static_member">Static Member</a>
+                    <ul class ="nav">
+                      <li><a href="#server_default_handler">default_handler</a></li>
+                      <li><a href="#server_default_accept_handler">default_accept_handler</a></li>
+                    </ul>
+                  </li>
+                  <li><a href="#server_member_function">Member Function</a>
+                    <ul class ="nav">
+                      <li><a href="#server_constructor">server</a></li>
+                      <li><a href="#server_destructor">~server</a></li>
+                      <li><a href="#server_assign">operator =</a></li>
+                      <li><a href="#server_start">start</a></li>
+                      <li><a href="#server_stop">stop</a></li>
+                      <li><a href="#server_state">state</a></li>
+                      <li><a href="#server_wait_for_ready">wait_for_ready</a></li>
+                      <li><a href="#server_set_accept_handler">set_accept_handler</a></li>
+                    </ul>
+                  </li>
+                </ul>
+              </li>
+              <li><a href="#attribute">Attribute</a>
+                <ul class="nav">
+                  <li><a href="#attribute_static_member">Static Member</a>
+                    <ul class="nav">
+                      <li><a href="#attribute_set_one_way">set_one_way</a></li>
+                      <li><a href="#attribute_get_one_way">get_one_way</a></li>
+                    </ul>
+                  </li>
+                </ul>
+              </li>
+              <li><a href="#io_runner">Io Runner</a>
+                <ul class="nav">
+                  <li><a href="#io_runner_static_member">Static Member</a></li>
+                  <li><a href="#io_runner_member_function">Member Function</a>
+                    <ul class="nav">
+                      <li><a href="#io_runner_constructor">io_runner</a></li>
+                      <li><a href="#io_runner_destructor">~io_runner</a></li>
+                      <li><a href="#io_runner_get_io_service">get_io_service</a></li>
+                    </ul>
+                </ul>
+              </li>
+              <li><a href="#global">Global</a>
+                <ul class="nav">
+                  <li><a href="#global_static_member">Static Member</a></li>
+                </ul>
+              </li>
+		  
+			</ul>
+		  </div>
+		</div>
+		
+	  </div>
+	</div>
+
+	<!-- footer -->
+	<hr>
+	<footer><p>&copy; Ng Kwan Ti 2013</p></footer>
+    <!-- end content -->
+	
+    <!-- js from 3rd party vendor -->
+    <script src="//ajax.googleapis.com/ajax/libs/jquery/1.10.1/jquery.min.js"></script>
+    <script>window.jQuery || document.write('<script src="js/vendor/jquery-1.10.1.min.js"><\/script>')</script>
+    <script src="//netdna.bootstrapcdn.com/bootstrap/3.0.0/js/bootstrap.min.js"></script>
+    <script>$.fn.modal || document.write('<script src="js/vendor/bootstrap.min.js"><\/script>')</script>
+    <script src="js/vendor/prettify.js"></script>
+
+    <!-- custom js -->
+    <!-- <script src="js/plugins.js"></script> <!-- custom plugin code for jquery -->
+    <script src="js/main.js"></script>
+  </body>
+</html>

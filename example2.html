@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <meta name="author" content="C++ remote method parameter passing">
+    <meta name="description" content="">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- <link rel="shortcut icon" href="favicon.ico"> -->
+
+    <!-- title for this page -->
+    <title>CppRemote - Example 2</title>
+
+    <!-- css from 3rd party vendor -->
+    <link rel="stylesheet" href="css/vendor/bootstrap.min.css">
+    <!-- <link rel="stylesheet" href="css/vendor/bootstrap-theme.min.css"> -->
+    <link rel="stylesheet" href="css/vendor/prettify.css">
+
+    <!-- custom styles -->
+    <link rel="stylesheet" href="css/main.css">
+
+    <!-- HTML5 shim and Respond.js IE8 support of HTML5 elements and media queries -->
+    <!--[if lt IE 9]>
+      <script src="js/vendor/html5shiv.js"></script>
+      <script src="js/vendor/respond.min.js"></script>
+    <![endif]-->
+
+    <!-- Google Analytics -->
+    <script>
+      var gaProperty = 'UA-45742852-1';
+      var disableStr = 'ga-disable-' + gaProperty;
+      if (document.cookie.indexOf(disableStr + '=true') > -1) {
+        window[disableStr] = true;
+      }
+      
+	  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+	  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+	  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+	  })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+	  ga('create', gaProperty, 'cppremote.com');
+	  ga('send', 'pageview');
+    </script>
+  </head>
+  <body data-spy="scroll" data-target=".my-toc" data-offset=50>
+    <!-- begin content -->
+    <!-- top navbar -->
+    <div class="navbar navbar-fixed-top navbar-inverse" role="navigation">
+      <div class="container">
+        <div class="navbar-header">
+          <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </button>
+          <a class="navbar-brand" href="www.cppremote.com">CppRemote</a>
+        </div>
+        <div class="collapse navbar-collapse">
+          <ul class="nav navbar-nav">
+            <li><a href="index.html">Home</a></li>
+            <li class="active"><a href="examples.html#example2">Examples</a></li>
+            <li><a href="documentation.html">Documentation</a></li>
+            <li><a href="download.html">Download</a></li>
+            <li><a href="forum.html">Forum</a></li>
+          </ul>
+        </div><!--/.nav-collapse -->
+      </div><!-- container -->
+    </div><!-- top navbar -->
+
+    <!-- page content -->
+    <div class="container my-page-container">
+      <div class="row">
+
+        <!-- page main area -->
+        <div class="my-main col-md-7" role="main">
+
+          <!-- add content here -->
+          <h2 id="header1">Example 2</h2>
+          <p>This example shows basic parameter passing supported by this library.  Basically, any boost <a href="http://www.boost.org/doc/libs/1_50_0/libs/serialization/doc/index.html">serializable</a> type can be passed as parameter into remote method.  This example introduces the items below:</p>
+          <ul>
+			<li>Passing serializable object</li>
+			<li>Passing serializable container</li>
+			<li>Passing reference and pointer</li>
+			<li>Passing shared_ptr and weak_ptr</li>
+			<li>Binding shared_ptr to remote interface</li>
+			<li>Getting raw pointer of remote interface</li>
+          </ul>
+
+          <p>The <code>person</code> class below is a serializable class that is passed as parameter into the methods in <code>service</code> class.  We will make the <code>service</code> class accessible from client application.</p>
+
+		  <div class="my-anchor" id="person_hpp"></div>
+          <pre class="prettyprint lang-cpp linenums">
+// person.hpp
+class person
+{
+public:
+    std::string m_name;
+    int m_age;
+
+    person()
+    : m_age(0)
+    {}
+
+    person(std::string name, int age)
+    : m_name(name), m_age(age)
+    {}
+
+    void info() const
+    {
+        std::cout &lt;&lt; m_name &lt;&lt; " (" &lt;&lt; m_age &lt;&lt; ")" &lt;&lt; std::endl;
+    }
+
+    template&lt;typename Archive>
+    void serialize(Archive& ar, unsigned int const ver)
+    {
+        ar & m_name & m_age;
+    }
+};</pre>
+
+          <p>The <code>service</code> class is a simple class that prints info of all the <code>person</code> object passed into it's methods.  If it is passed by pointer or reference, it increases the age of the <code>person</code> object.</p>
+
+		  <div class="my-anchor" id="service_hpp"></div>
+          <pre class="prettyprint lang-cpp linenums">
+// service.hpp
+#include "person.hpp"
+#include &lt;boost/shared_ptr.hpp>
+#include &lt;vector>
+
+class service
+{
+public:
+    void pass_person(person p)
+    {
+        p.info();
+    }
+
+    void pass_people(std::vector&lt;person> p)
+    {
+        typedef std::vector&lt;person>::iterator iterator;
+        for(iterator iter = p.begin(); iter != p.end(); ++iter)
+            iter->info();
+    }
+
+    void pass_reference(person& r)
+    {
+        r.info();
+        r.m_age++;
+    }
+
+    void pass_pointer(person* p)
+    {
+        if(p == 0)
+            return;
+
+        p->info();
+        p->m_age++;
+    }
+
+    void pass_shared_ptr(boost::shared_ptr&lt;person> s)
+    {
+        if(!s)
+            return;
+
+        s->info();
+        s->m_age++;
+    }
+
+    void pass_weak_ptr(boost::weak_ptr&lt;person> w)
+    {
+        boost::shared_ptr&lt;person> s = w.lock();
+        if(!s)
+            return;
+
+        s->info();
+        s->m_age++;
+    }
+};</pre>
+
+          <p>In the remote interface definition file for service, we must include serialization code for vector and shared_ptr to make them serializable via <a href="http://www.boost.org/doc/libs/1_50_0/libs/serialization/doc/index.html">boost.serialization</a>.</p>
+
+		  <div class="my-anchor" id="remote_service_hpp"></div>
+          <pre class="prettyprint lang-cpp linenums">
+// remote_service.hpp
+#ifndef REMOTE_SERVICE_HPP
+#define REMOTE_SERVICE_HPP
+
+#include "person.hpp"
+#include &lt;remote/idl.hpp>
+#include &lt;boost/serialization/vector.hpp>
+#include &lt;boost/serialization/shared_ptr.hpp>
+
+#define REMOTE_CLASS                                                    \
+REMOTE_CLASS_BEGIN(remote_service)                                      \
+    REMOTE_METHOD_M1(void, pass_person, person)                         \
+    REMOTE_METHOD_M1(void, pass_people, std::vector&lt;person>)            \
+    REMOTE_METHOD_M1(void, pass_reference, person&)                     \
+    REMOTE_METHOD_M1(void, pass_pointer, person*)                       \
+    REMOTE_METHOD_M1(void, pass_shared_ptr, boost::shared_ptr&lt;person>)  \
+    REMOTE_METHOD_M1(void, pass_weak_ptr, boost::weak_ptr&lt;person>)      \
+REMOTE_CLASS_END
+#include &lt;remote/idl/class.hpp>
+
+#define REMOTE_REGISTER_CLASS remote_service
+#include &lt;remote/idl/register_class.hpp>
+
+#endif</pre>
+
+		  <p>And the implementation file for remote_service.</p>
+		  <div class="my-anchor" id="remote_service_cpp"></div>
+          <pre class="prettyprint lang-cpp linenums">
+// remote_service.cpp
+#include &lt;remote/bindings/text_serializer.hpp>
+#define REMOTE_IMPLEMENT_CLASS remote_service
+#include "remote_service.hpp"</pre>
+
+		  <p>The <code>person.hpp</code> serves as data contract and the <code>remote_service.hpp/cpp</code> serve as the interface contract between the client and server applications.  These 3 files must be included and linked into both the client and server applications.</p>
+		  
+		  <p>After we have the remote interface class, creating server and client applications are simple.</p>
+		  
+		  <div class="my-anchor" id="server_cpp"></div>
+          <pre class="prettyprint lang-cpp linenums">
+// server.cpp
+#include "service.hpp"
+#include "remote_service.hpp"
+#include &lt;remote/server.hpp>
+#include &lt;remote/make_tcp_binding.hpp>
+#include &lt;boost/make_shared.hpp>
+
+
+int main()
+{
+    remote::server server;
+
+    // bind a shared_ptr to the server
+    server.bind&lt;remote_service>(boost::make_shared&lt;service>(), "test");
+    server.start(remote::make_tcp_binding("localhost", 9999));
+
+    std::cin.get();
+    return 0;
+}</pre>
+
+		  <div class="my-anchor" id="client_cpp"></div>
+          <pre class="prettyprint lang-cpp linenums">
+// client.cpp
+#include "remote_service.hpp"
+#include &lt;remote/session.hpp>
+#include &lt;remote/make_tcp_binding.hpp>
+
+
+int main()
+{
+    // create data
+    person tom("tom", 13);
+    person ben("ben", 18);
+
+    std::vector&lt;person> girls;
+    girls.push_back(person("jenny", 9));
+    girls.push_back(person("amanda", 10));
+
+    auto eddy = boost::make_shared&lt;person>("eddy", 30);
+    auto andy = boost::make_shared&lt;person>("andy", 38);
+
+    // create session and connect to server
+    remote::session session;
+    session.start(remote::make_tcp_binding("localhost", 9999));
+    session.wait_for_ready();
+
+    // get a raw pointer of remote_service
+    remote_service* service = session.get_raw&lt;remote_service>("test");
+
+    // use the remote pointer
+    service->pass_person(tom);
+    service->pass_people(girls);
+
+    // pass by reference & pointer.
+    service->pass_reference(tom);
+    service->pass_pointer(&ben);
+    service->pass_shared_ptr(eddy);
+    service->pass_weak_ptr(andy);
+
+    // passing null pointer is ok
+    service->pass_pointer(0);
+    service->pass_shared_ptr(boost::shared_ptr&lt;person>());
+    service->pass_weak_ptr(boost::shared_ptr&lt;person>());
+
+    // changes in referenced objects are updated
+    assert(tom.m_age == 14);
+    assert(ben.m_age == 19);
+    assert(eddy->m_age == 31);
+    assert(andy->m_age == 39);
+
+    // release the raw pointer
+    session.release(service);
+
+    return 0;
+}</pre>
+		  <p>It is advisable to always get shared pointer instead of raw pointer so that the session can manage the life time of the created object.</p>
+		  
+		  <p>When a normal pointer or reference is passed to the remote method, the object it pointed to is sent to target site via serialization and any changes to the object at target site is serialized back to caller site to update the original object.  So, make sure no dangling pointer is passed to the remote method.</p>
+		  
+		  <p>The pointer parameter that is passed into the <code>service</code> object is not actually pointed to the original object at caller site but pointed to a temporary object at target site.  Notice that the person info is printed at server application even though it is called via pointer.</p>
+		  
+		  <blockquote>
+		    <p><strong>Note:</strong></p>
+		    <p>It is possible to pass a pointer that is abstractly pointing to the remote object and make a method call to the actual remote object.  This is realized by passing remote pointer as parameter.</p>
+		  </blockquote>
+
+		  <a class="btn btn-default navbar-btn my-next-btn" href="example3.html">Next Example</a>
+		
+        </div>
+
+        <!-- page right sidebar -->
+        <div class="my-sidebar col-md-3" role="complementary">
+          <div class="my-toc hidden-print affix">
+            <ul class="nav">
+
+              <!-- add toc list here -->
+			  <li><a href="#person_hpp">person.hpp</a></li>
+			  <li><a href="#service_hpp">service.hpp</a></li>
+			  <li><a href="#remote_service_hpp">remote_service.hpp</a></li>
+			  <li><a href="#remote_service_cpp">remote_service.cpp</a></li>
+			  <li><a href="#server_cpp">server.cpp</a></li>
+			  <li><a href="#client_cpp">client.cpp</a></li>
+
+            </ul>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- footer -->
+    <hr>
+    <footer><p>&copy; Ng Kwan Ti 2013</p></footer>
+    <!-- end content -->
+
+    <!-- js from 3rd party vendor -->
+    <script src="//ajax.googleapis.com/ajax/libs/jquery/1.10.1/jquery.min.js"></script>
+    <script>window.jQuery || document.write('<script src="js/vendor/jquery-1.10.1.min.js"><\/script>')</script>
+    <script src="//netdna.bootstrapcdn.com/bootstrap/3.0.0/js/bootstrap.min.js"></script>
+    <script>$.fn.modal || document.write('<script src="js/vendor/bootstrap.min.js"><\/script>')</script>
+    <script src="js/vendor/prettify.js"></script>
+
+    <!-- custom js -->
+    <script src="js/main.js"></script>
+  </body>
+</html>

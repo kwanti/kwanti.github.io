@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <meta name="author" content="">
+    <meta name="description" content="C++ remote interface description language (IDL)">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- <link rel="shortcut icon" href="favicon.ico"> -->
+
+    <!-- title for this page -->
+    <title>CppRemote - Example 1</title>
+
+    <!-- css from 3rd party vendor -->
+    <link rel="stylesheet" href="css/vendor/bootstrap.min.css">
+    <!-- <link rel="stylesheet" href="css/vendor/bootstrap-theme.min.css"> -->
+    <link rel="stylesheet" href="css/vendor/prettify.css">
+
+    <!-- custom styles -->
+    <link rel="stylesheet" href="css/main.css">
+
+    <!-- HTML5 shim and Respond.js IE8 support of HTML5 elements and media queries -->
+    <!--[if lt IE 9]>
+      <script src="js/vendor/html5shiv.js"></script>
+      <script src="js/vendor/respond.min.js"></script>
+    <![endif]-->
+
+    <!-- Google Analytics -->
+    <script>
+      var gaProperty = 'UA-45742852-1';
+      var disableStr = 'ga-disable-' + gaProperty;
+      if (document.cookie.indexOf(disableStr + '=true') > -1) {
+        window[disableStr] = true;
+      }
+      
+	  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+	  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+	  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+	  })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+	  ga('create', gaProperty, 'cppremote.com');
+	  ga('send', 'pageview');
+    </script>
+  </head>
+  <body data-spy="scroll" data-target=".my-toc" data-offset=50>
+    <!-- begin content -->
+    <!-- top navbar -->
+    <div class="navbar navbar-fixed-top navbar-inverse" role="navigation">
+      <div class="container">
+        <div class="navbar-header">
+          <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </button>
+          <a class="navbar-brand" href="www.cppremote.com">CppRemote</a>
+        </div>
+        <div class="collapse navbar-collapse">
+          <ul class="nav navbar-nav">
+            <li><a href="index.html">Home</a></li>
+            <li class="active"><a href="examples.html#example1">Examples</a></li>
+            <li><a href="documentation.html">Documentation</a></li>
+            <li><a href="download.html">Download</a></li>
+            <li><a href="forum.html">Forum</a></li>
+          </ul>
+        </div><!--/.nav-collapse -->
+      </div><!-- container -->
+    </div><!-- top navbar -->
+
+    <!-- page content -->
+    <div class="container my-page-container">
+      <div class="row">
+
+        <!-- page main area -->
+        <div class="my-main col-md-7" role="main">
+
+          <!-- add content here -->
+          <h2 id="header1">Example 1</h2>
+          <p>This example shows the basic of creating remote interface and introduces some basic features below:</p>
+          <ul>
+            <li>synchronous method</li>
+            <li>asynchronous method</li>
+            <li>const qualified method</li>
+            <li>putting remote interface into namespace</li>
+            <li>binding target object to remote interface</li>
+            <li>getting a remote interface pointer from session</li>
+          </ul>
+
+          <p>Let's say we already have an <code>audio_player</code> class below and we want to make this class accessible remotely from a client application.</p>
+
+		  <div class="my-anchor" id="audio_player_hpp"></div>
+          <pre class="prettyprint lang-cpp linenums">
+// audio_player.hpp
+#ifndef EXAMPLE_AUDIO_PLAYER_HPP
+#define EXAMPLE_AUDIO_PLAYER_HPP
+
+class audio_player
+{
+public:
+    void play(std::string const& song) { m_playing = true; }
+
+    void stop() { m_playing = false; }
+
+    int rewind(int position) { /*take long time to rewind...*/ return position; }
+
+    bool is_playing() const { return m_playing; }
+
+    std::string name() const { return "no name"; }
+
+private:
+    bool m_playing;
+};
+
+#endif</pre>
+
+          <p>The first step is to create a remote interface definition file below.  The signature of the method in <code>remote_player</code> must be compatible with the method signature in the <code>audio_player</code> class.  We only make 4 methods accessible from remote site and the <code>name</code> method in <code>audio_player</code> remain private.  The <code>remote_player</code> class is put into <code>example</code> namespace.</p>
+
+		  <div class="my-anchor" id="remote_player_hpp"></div>
+          <pre class="prettyprint lang-cpp linenums">
+// remote_player.hpp
+#ifndef EXAMPLE_REMOTE_PLAYER_HPP
+#define EXAMPLE_REMOTE_PLAYER_HPP
+#include &lt;remote/idl.hpp>
+
+namespace example  // put this class into a namespace
+{
+
+#define REMOTE_CLASS                                    \
+REMOTE_CLASS_BEGIN(remote_player)                       \
+    REMOTE_METHOD_M1(void, play, std::string const&)    \
+    REMOTE_METHOD_M0(void, stop)                        \
+    REMOTE_METHOD_C0(bool, is_playing)                  \
+    REMOTE_ASYNC_M1(int, rewind, int)                   \
+REMOTE_CLASS_END
+#include &lt;remote/idl/class.hpp>
+
+}
+
+#define REMOTE_REGISTER_CLASS example::remote_player
+#include &lt;remote/idl/register_class.hpp>
+
+#endif</pre>
+
+          <p>Then, create an implementation file for the remote interface.</p>
+
+		  <div class="my-anchor" id="remote_player_cpp"></div>
+          <pre class="prettyprint lang-cpp linenums">
+// remote_player.cpp
+#include &lt;remote/bindings/text_serializer.hpp>
+#define REMOTE_IMPLEMENT_CLASS example::remote_player
+#include "remote_player.hpp"</pre>
+
+		  <p>The <code>remote_player.hpp</code> and <code>remote_player.cpp</code> files serve as the interface contract between client and server applications.  Just like ordinary C++ class files, these files can be included and compiled with the server and client applications.  Alternatively, the <code>remote_player.cpp</code> file can also be compiled into a static library and then link to the server and client applications.</p>
+		  <p>After we have the remote interface class, creating server and client applications are simple.</p>
+		  
+		  <div class="my-anchor" id="server_cpp"></div>
+          <pre class="prettyprint lang-cpp linenums">
+// server.cpp
+#include "audio_player.hpp"
+#include "remote_player.hpp"
+#include &lt;remote/server.hpp>
+#include &lt;remote/make_tcp_binding.hpp>
+
+int main()
+{
+    audio_player player;
+
+    remote::server server;
+    server.bind&lt;example::remote_player>(&player, "nice player");
+    server.start(remote::make_tcp_binding(8888));
+
+    std::cin.get();
+    return 0;
+}</pre>
+		  <p>In the server application, we first create an instance of <code>audio_player</code> object that we want to provide access from client.  Then create a <code>remote::server</code> object to host remote service.  The next part is to bind the <code>player</code> object to the server as <code>remote_player</code> interface that is accessible from client.  The binding is given a name <code>"nice player"</code> so that client can request this binding by name.  Finally, we start the server so that it starts listening to tcp port <em>8888</em> and waiting for connection from client.</p>
+
+		  <div class="my-anchor" id="client_cpp"></div>
+          <pre class="prettyprint lang-cpp linenums">
+// client.cpp
+#include "remote_player.hpp"
+#include &lt;remote/session.hpp>
+#include &lt;remote/make_tcp_binding.hpp>
+
+int main()
+{
+    remote::session session;
+
+    // start session and connect to server
+    session.start(remote::make_tcp_binding("localhost", 8888));
+    if(session.wait_for_ready() != remote::session::started)
+        return -1;
+
+    // get a remote_player pointer by name
+    boost::shared_ptr&lt;example::remote_player> player
+        = session.get&lt;example::remote_player>("nice player");
+
+    // use the remote_player pointer
+    player->play("nice song");
+    player->stop();
+    bool state = player->is_playing();
+
+    // asynchronous call
+    remote::future&lt;int> f = player->rewind(10);
+
+    // do more work here...
+
+    int pos = f.get();  // will throw if there is exception
+
+    return 0;
+}</pre>
+		  <p>In the client application, we first create a <code>remote::session</code> object to connect to the server.  Then start the session to connect to <code>"localhost"</code> address and port <em>8888</em> using tcp.  Then, wait for the session to establish connection and ready for network operations.</p>
+		  
+		  <p>When the session is started, we can query for the <code>remote_player</code> interface pointer using the <code>get</code> method and by providing the name of the object we want to get.  Once we get the remote interface pointer, we can use the interface like a normal pointer to call the remote method.</p>
+		  
+		  <p>In this example, you can see that the client application can also call a constant method and also call a method asynchronously using <code>remote::future</code>.  This is just the basic of remote library.  There is more advance features we haven't covered in this example.</p>
+
+		  <a class="btn btn-default navbar-btn my-next-btn" href="example2.html">Next Example</a>
+		
+        </div>
+
+        <!-- page right sidebar -->
+        <div class="my-sidebar col-md-3" role="complementary">
+          <div class="my-toc hidden-print affix">
+            <ul class="nav">
+
+              <!-- add toc list here -->
+			  <li><a href="#audio_player_hpp">audio_player.hpp</a></li>
+			  <li><a href="#remote_player_hpp">remote_player.hpp</a></li>
+			  <li><a href="#remote_player_cpp">remote_player.cpp</a></li>
+			  <li><a href="#server_cpp">server.cpp</a></li>
+			  <li><a href="#client_cpp">client.cpp</a></li>
+
+            </ul>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- footer -->
+    <hr>
+    <footer><p>&copy; Ng Kwan Ti 2013</p></footer>
+    <!-- end content -->
+
+    <!-- js from 3rd party vendor -->
+    <script src="//ajax.googleapis.com/ajax/libs/jquery/1.10.1/jquery.min.js"></script>
+    <script>window.jQuery || document.write('<script src="js/vendor/jquery-1.10.1.min.js"><\/script>')</script>
+    <script src="//netdna.bootstrapcdn.com/bootstrap/3.0.0/js/bootstrap.min.js"></script>
+    <script>$.fn.modal || document.write('<script src="js/vendor/bootstrap.min.js"><\/script>')</script>
+    <script src="js/vendor/prettify.js"></script>
+
+    <!-- custom js -->
+    <script src="js/main.js"></script>
+  </body>
+</html>

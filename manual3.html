@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <meta name="author" content="">
+    <meta name="description" content="C++ remote user manual 3.  Bindings, serialization, archive and transport.">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- <link rel="shortcut icon" href="favicon.ico"> -->
+
+    <!-- title for this page -->
+    <title>CppRemote - User Manual 3</title>
+
+    <!-- css from 3rd party vendor -->
+    <link rel="stylesheet" href="css/vendor/bootstrap.min.css">
+    <!-- <link rel="stylesheet" href="css/vendor/bootstrap-theme.min.css"> -->
+    <link rel="stylesheet" href="css/vendor/prettify.css">
+
+    <!-- custom styles -->
+    <link rel="stylesheet" href="css/main.css">
+
+    <!-- HTML5 shim and Respond.js IE8 support of HTML5 elements and media queries -->
+    <!--[if lt IE 9]>
+      <script src="js/vendor/html5shiv.js"></script>
+      <script src="js/vendor/respond.min.js"></script>
+    <![endif]-->
+
+	<!-- Google Analytics -->
+	<script>
+      var gaProperty = 'UA-45742852-1';
+      var disableStr = 'ga-disable-' + gaProperty;
+      if (document.cookie.indexOf(disableStr + '=true') > -1) {
+        window[disableStr] = true;
+      }
+      
+	  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+	  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+	  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+	  })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+	  ga('create', gaProperty, 'cppremote.com');
+	  ga('send', 'pageview');
+	</script>
+  </head>
+  <body data-spy="scroll" data-target=".my-toc" data-offset=50>
+    <!-- begin content -->
+	<!-- top navbar -->
+	<div class="navbar navbar-fixed-top navbar-inverse" role="navigation">
+	  <div class="container">
+	    <div class="navbar-header">
+          <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </button>
+		  <a class="navbar-brand" href="www.cppremote.com">CppRemote</a>
+		</div>
+        <div class="collapse navbar-collapse">
+          <ul class="nav navbar-nav">
+            <li><a href="index.html">Home</a></li>
+            <li><a href="examples.html">Examples</a></li>
+            <li class="active"><a href="documentation.html#manual">Documentation</a></li>
+            <li><a href="download.html">Download</a></li>
+			<li><a href="forum.html">Forum</a></li>
+          </ul>
+        </div><!--/.nav-collapse -->
+	  </div><!-- container -->
+	</div><!-- top navbar -->
+
+    <!-- page content -->
+	<div class="container my-page-container">
+	  <div class="row">
+
+	    <!-- page main area -->
+		<div class="my-main col-md-7" role="main">
+
+		  <!-- add content here -->
+
+          <!-- Bindings -->
+          <section>
+            <h2 id="bindings">Bindings</h2>
+            <p>In this library, the core layer is separated from the communication layer.  From the perspective of core library, it just connects to each other and sends <code>remote call</code> object through the channel interface classes. It doesn't need to care how they are connected and how the <code>remote call</code> object is sent.  Bindings is the layer that take care of how a <code>remote call</code> object is sent to the peer and reach the peer's <code><a href="#bindings_channel">channel interface</a></code> as the same <code>remote call</code> object.</p>
+            <p>Bindings specifies how session communicate with each other.  It specifies things like serialization format, encoding, protocol and transport details required to communicate with each other. It consist of combination of binding elements that add together, with each element specifies certain aspect of how endpoint communicate.  At minimum, bindings must include a serializer and a transport element.</p>
+            <p>Bindings elements can be mixed together at compile time as template or at runtime as interface classes.  This library currently provides compile time bindings as template.  It provides various serializer and transport elements that can be mixed together as bindings.  Bindings module is open for extension.  If you need bindings elements that is not provided by this library, you can create one and make a custom bindings yourself.</p>
+
+            <h2 id="bindings_interface">Interface</h2>
+            <p>Bindings interface is the contact point between core and bindings layers.  It consist of 3 classes that are pure interfaces which are <code>binding</code>, <code>channel</code> and <code>acceptor</code>.</p>
+
+            <h3 id="bindings_binding">binding</h3>
+            <p>
+              Header: <code>&lt;remote/bindings/binding.hpp></code><br>
+              Class: <code>remote::bindings::binding</code>
+            </p>
+            <p>Binding interface provides information of the endpoint to connect or to accept connection.  It provides access to the <code>channel</code> and <code>acceptor</code> interfaces.  Implementation of <code>binding</code> interface should hold information about the endpoint and use it in the implementation of the <code>connect</code> and <code>accept</code> methods.</p>
+
+            <h4 id="bindings_binding_member_type">Member Type</h4>
+            <table class="table">
+              <tr><th>Name</th><th>Description</th></tr>
+              <tr><td>handler</td><td>Event handler with function signature <code>void(exception_ptr)</code></td></tr>
+            </table>
+
+            <h4 id="bindings_binding_member_function">Member Function</h4>
+            <table class="table">
+              <tr><th>Name</th><th>Description</th></tr>
+              <tr><td><a href="#bindings_binding_connect">connect</a></td><td>Initiate connection to the peer endpoint and return a <code>channel</code> interface to the connection.</td></tr>
+              <tr><td><a href="#bindings_binding_accept">accept</a></td><td>Start listening from an endpoint and return a <code>acceptor</code> interface.</td></tr>
+            </table>
+
+            <h4 id="bindings_binding_connect">connect</h4>
+            <pre class="prettyprint lang-cpp">
+    virtual channel_ptr connect(io_service& ios, handler hdl) = 0;</pre>
+            <p>Initiate connection to the peer endpoint and return a <code>channel</code> interface to the connection.</p>
+
+            <p><em>parameter:</em></p>
+            <p><code>ios</code> - io_service to use.</p>
+            <p><code>hdl</code> - event handler to return the result of the connect operation.</p>
+
+            <p><em>return:</em></p>
+            <p>A channel interface for this connection.</p>
+
+            <h4 id="bindings_binding_accept">accept</h4>
+            <pre class="prettyprint lang-cpp">
+    virtual acceptor_ptr listen(io_service& ios, handler hdl) = 0;</pre>
+            <p>Start listening from an endpoint and return a <code>acceptor</code> interface.</p>
+
+            <p><em>parameter:</em></p>
+            <p><code>ios</code> - io_service to use.</p>
+            <p><code>hdl</code> - event handler to return the result of the accept operation.</p>
+
+            <p><em>return:</em></p>
+            <p>An acceptor interface that start listening to the endpoint.</p>
+
+            <hr>
+
+            <h3 id="bindings_channel">channel</h3>
+            <p>
+              Header: <code>&lt;remote/bindings/channel.hpp></code><br>
+              Class: <code>remote::bindings::channel</code>
+            </p>
+            <p>Channel is an interface for 2 connected endpoints to send and receive <code>remote call</code> object with each other.</p>
+
+            <h4 id="bindings_channel_member_type">Member Type</h4>
+            <table class="table">
+              <tr><th>Name</th><th>Description</th></tr>
+              <tr><td>state_t</td><td>connection state enum.</td></tr>
+              <tr><td>handler</td><td>event handler with signature <code>void(exception_ptr)</code>.</td></tr>
+              <tr><td>call_handler</td><td>event handler with signature <code>void(exception_ptr, call_ptr)</code).</td></tr>
+            </table>
+
+            <h4 id="bindings_channel_member_function">Member Function</h4>
+            <table class="table">
+              <tr><th>Name</th><th>Description</th></tr>
+              <tr><td>state</td><td>Return current state of channel.</td></tr>
+              <tr><td>disconnect</td><td>Disconnect the channel.</td></tr>
+              <tr><td>send</td><td>Method to send a call.</td></tr>
+              <tr><td>receive</td><td>Method to start receiving call.</code>.</td></tr>
+            </table>
+
+            <h4 id="bindings_acceptor">acceptor</h4>
+            <p>
+              Header: <code>&lt;remote/bindings/acceptor.hpp></code><br>
+              Class: <code>remote::bindings::acceptor</code>
+            </p>
+            <p>Acceptor is an interface that listening to an endpoint and accept connection.</p>
+
+            <h4 id="bindings_acceptor_member_type">Member Type</h4>
+            <table class="table">
+              <tr><th>Name</th><th>Description</th></tr>
+              <tr><td>handler</td><td>event handler with signature <code>void(exception_ptr)</code>.</td></tr>
+            </table>
+
+            <h4 id="bindings_acceptor_member_function">Member Function</h4>
+            <table class="table">
+              <tr><th>Name</th><th>Description</th></tr>
+              <tr><td>close</td><td>Stop listening to endpoint and close this acceptor.</td></tr>
+              <tr><td>is_listening</td><td>Test if this acceptor is listening to endpoint.</td></tr>
+              <tr><td>accept</td><td>Method to accept next connection.</td></tr>
+            </table>
+
+            <h2 id="bindings_template">Template</h2>
+            <p>This library provides a set of template classes that implement the bindings interfaces.  The template classes enable adding of bindings elements at compile time.</p>
+
+            <h4 id="bindings_basic_binding">basic_binding</h4>
+            <p>Template implements the binding interface.  This template is to configure bindings elements at compile time.  Current implementation accepts <a href="#bindings_serializer">serializer</a> and <a href="#bindings_transport">transport</a> types as template parameter.</p>
+
+            <h4 id="bindings_basic_channel">basic_channel</h4>
+            <p>Template implements the channel interface.</p>
+
+            <h4 id="bindings_basic_acceptor">basic_acceptor</h4>
+            <p>Template implements the acceptor interface.</p>
+
+
+            <h2 id="bindings_factory">Factory</h2>
+            <p>Remote library provides some factory functions for user to easily create bindings with pre-configured binding elements or custom binding where user can specify the binding element type.  The factory functions are listed below.</p>
+            <table class="table">
+            <tr><th>Factory Method</th><th>Description</th></tr>
+            <tr><td>make_basic_binding</td><td>Template function to create custom binding.</td></tr>
+            <tr><td>make_tcp_binding</td><td>Function to create a binding pre-configured with text_serializer and tcp_transport.</td></tr>
+            <tr><td>make_ipc_binding</td><td>Function to create a binding pre-configured with binary_serializer and ipc_transport.</td></tr>
+            </table>
+
+            <h4 id="make_basic_binding">make_basic_binding</h4>
+            <p>
+              Header: <code>&lt;remote/make_basic_binding.hpp></code><br>
+            </p>
+            <pre class="prettyprint lang-cpp">
+    template&lt;typename Serializer, typename Transport, typename A1>
+    remote::binding make_basic_binding(A1 a1);
+
+    template&lt;typename Serializer, typename Transport, typename Filter, typename A1>
+    remote::binding make_basic_binding(A1 a1);
+
+    template&lt;typename Serializer, typename Transport, typename A1, typename A2>
+    remote::binding make_basic_binding(A1 a1, A2 a2);
+
+    template&lt;typename Serializer, typename Transport, typename Filter, typename A1, typename A2>
+    remote::binding make_basic_binding(A1 a1, A2 a2);</pre>
+            <p>Template function to create custom binding.  User must specify serializer type and transport type in template parameter.  Accept argument accepted by the endpoint of the transport type.</p>
+
+            <h4 id="make_tcp_binding">make_tcp_binding</h4>
+            <p>
+              Header: <code>&lt;remote/make_tcp_binding.hpp></code><br>
+            </p>
+            <pre class="prettyprint lang-cpp">
+    template&lt;typename A1>
+    remote::binding make_tcp_binding(A1 a1);
+
+    template&lt;typename A1, typename A2>
+    remote::binding make_tcp_binding(A1 a1, A2 a2);</pre>
+            <p>Function to create a binding pre-configured with text_serializer and tcp_transport.  Accept argument required for the tcp_endpoint of the transport type.</p>
+
+            <h4 id="make_ipc_binding">make_ipc_binding</h4>
+            <p>
+              Header: <code>&lt;remote/make_ipc_binding.hpp></code><br>
+            </p>
+            <pre class="prettyprint lang-cpp">
+    template&lt;typename A1>
+    remote::binding make_ipc_binding(A1 a1);</pre>
+            <p>Function to create a binding pre-configured with binary_serializer and ipc_transport.  Accept a filepath for the ipc connection.</p>
+
+
+            <h2 id="bindings_serializer">Serializer</h2>
+            <p>Serializer element perform serialization and deserialization of <code>remote call</code> object into buffer of encoded data using the <a href="http://www.boost.org/doc/libs/1_50_0/libs/serialization/doc/index.html">boost.serialization</a> library.  It uses <a href="#archive">archives customized</a> for this library.  Table below list the serializers included with this library.</p>
+            <table class="table">
+              <tr><th>Serializer</th><th>Archive</th><th>Description</th></tr>
+              <tr><td>text_serializer</td><td>text_archive</td><td>a portable text archive</td></tr>
+              <tr><td>xml_serializer</td><td>xml_archive</td><td>a portable XML archive</td></tr>
+              <tr><td>binary_serializer</td><td>binary_archive</td><td>a non-portable native binary archive</td></tr>
+            </table>
+
+
+            <h2 id="bindings_transport">Transport</h2>
+            <p>Transport element included in this library are listed in the table below.</p>
+            <table class="table">
+              <tr><th>Transport</th><th>Description</th></tr>
+              <tr><td>tcp_transport</td><td>based on <code>boost::asio::tcp::socket</code></td></tr>
+              <tr><td>udp_transport</td><td>based on <code>boost::asio::udp::socket</code></td></tr>
+              <tr><td>named_pipe_transport</td><td>windows namepipe based on <code>boost::asio::windows::stream_handle</code></td></tr>
+              <tr><td>local_transport</td><td>linux domain socket transport based on <code>boost::asio::local::stream_protocol_socket</code></td></tr>
+              <tr><td>ipc_transport</td><td>select <code>named_pipe_transport</code> when compile in windows platform and <code>local_transport</code> when compile in linux platform</td></tr>
+            </table>
+
+
+            <h2 id="bindings_filter">Filter</h2>
+            <p>Filter element perform filtering to the serialized data before it is sent to the transport element.  This is an optional binding element.</p>
+            <table class="table">
+              <tr><th>Filter</th><th>Description</th></tr>
+              <tr><td>no_filter</td><td>pass data to the next binding element unchanged</td></tr>
+              <tr><td>zlib_filter</td><td>perform compression to the data.  The implementation of this filter use 3rd party zlib library.  To use this filter, user must has <a href="http://www.zlib.net/">zlib</a> installed and add <code>/src/remote/bindings/zlib_filter.cpp</code> to project file.</td></tr>
+            </table>
+
+          </section>
+
+          <!-- Archive -->
+          <section>
+          <h2 id="archive">Archive</h2>
+          <p>This library implemented a set of archives for it's internal needs to track all the loaded raw pointers when serializing <code>remote call</code>.  It's is based on existing archives in the boost.serialization library.  In normal used case, they behave exactly the same as archives in the boost.serialization library.  Using archives included in this library for persisting data together with remote interface should reduce among of generated code.</p>
+          <p>They are in the <code>remote::archive</code> namespace.</p>
+
+          </section>
+
+		  
+          <a class="btn btn-default navbar-btn my-next-btn" href="documentation.html#manual">Overview</a>
+          <a class="btn btn-default navbar-btn my-next-btn" href="manual2.html">Prev Part</a>
+		</div>
+		
+		<!-- page right sidebar -->
+		<div class="my-sidebar col-md-3" role="complementary">
+		  <div class="my-toc hidden-print affix">
+		    <ul class="nav">
+			
+			  <!-- add toc list here -->
+              <li><a href="#bindings">Bindings</a>
+                <ul class="nav">
+                  <li><a href="#bindings_interface">Interface</a>
+                    <ul class="nav">
+                      <li><a href="#bindings_binding">binding</a>
+                        <ul class="nav">
+                          <li><a href="#bindings_binding_member_type">Member Type</a></li>
+                          <li><a href="#bindings_binding_member_function">Member Function</a>
+                            <ul class="nav">
+                              <li><a href="#bindings_binding_connect">connect</a></li>
+                              <li><a href="#bindings_binding_accept">accept</a></li>
+                            </ul>
+                          </li>
+                        </ul>
+                      </li>
+                      <li><a href="#bindings_channel">channel</a>
+                        <ul class="nav">
+                          <li><a href="#bindings_channel_member_type">Member Type</a></li>
+                          <li><a href="#bindings_channel_member_function">Member Function</a></li>
+                        </ul>
+                      </li>
+                      <li><a href="#bindings_acceptor">acceptor</a>
+                        <ul class="nav">
+                          <li><a href="#bindings_acceptor_member_type">Member Type</a></li>
+                          <li><a href="#bindings_acceptor_member_function">Member Function</a></li>
+                        </ul>
+                      </li>
+                    </ul>
+                  </li>
+                  <li><a href="#bindings_template">Template</a></li>
+                  <li><a href="#bindings_factory">Factory</a>
+                    <ul class="nav">
+                      <li><a href="#make_basic_binding">make_basic_binding</a></li>
+                      <li><a href="#make_tcp_binding">make_tcp_binding</a></li>
+                      <li><a href="#make_ipc_binding">make_ipc_binding</a></li>
+                    </ul>
+                  </li>
+                  <li><a href="#bindings_serializer">Serializer</a></li>
+                  <li><a href="#bindings_transport">Transport</a></li>
+                  <li><a href="#bindings_filter">Filter</a></li>
+                </ul>
+              </li>
+              <li><a href="#archive">Archive</a></li>
+		  
+			</ul>
+		  </div>
+		</div>
+		
+	  </div>
+	</div>
+
+	<!-- footer -->
+	<hr>
+	<footer><p>&copy; Ng Kwan Ti 2013</p></footer>
+    <!-- end content -->
+	
+    <!-- js from 3rd party vendor -->
+    <script src="//ajax.googleapis.com/ajax/libs/jquery/1.10.1/jquery.min.js"></script>
+    <script>window.jQuery || document.write('<script src="js/vendor/jquery-1.10.1.min.js"><\/script>')</script>
+    <script src="//netdna.bootstrapcdn.com/bootstrap/3.0.0/js/bootstrap.min.js"></script>
+    <script>$.fn.modal || document.write('<script src="js/vendor/bootstrap.min.js"><\/script>')</script>
+    <script src="js/vendor/prettify.js"></script>
+
+    <!-- custom js -->
+    <!-- <script src="js/plugins.js"></script> <!-- custom plugin code for jquery -->
+    <script src="js/main.js"></script>
+  </body>
+</html>

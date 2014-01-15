@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <meta name="author" content="">
+    <meta name="description" content="C++ remote observer pattern to implement publish-subscribe">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- <link rel="shortcut icon" href="favicon.ico"> -->
+
+    <!-- title for this page -->
+    <title>CppRemote - Example 6</title>
+
+    <!-- css from 3rd party vendor -->
+    <link rel="stylesheet" href="css/vendor/bootstrap.min.css">
+    <!-- <link rel="stylesheet" href="css/vendor/bootstrap-theme.min.css"> -->
+    <link rel="stylesheet" href="css/vendor/prettify.css">
+
+    <!-- custom styles -->
+    <link rel="stylesheet" href="css/main.css">
+
+    <!-- HTML5 shim and Respond.js IE8 support of HTML5 elements and media queries -->
+    <!--[if lt IE 9]>
+      <script src="js/vendor/html5shiv.js"></script>
+      <script src="js/vendor/respond.min.js"></script>
+    <![endif]-->
+
+    <!-- Google Analytics -->
+    <script>
+      var gaProperty = 'UA-45742852-1';
+      var disableStr = 'ga-disable-' + gaProperty;
+      if (document.cookie.indexOf(disableStr + '=true') > -1) {
+        window[disableStr] = true;
+      }
+      
+	  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+	  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+	  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+	  })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+	  ga('create', gaProperty, 'cppremote.com');
+	  ga('send', 'pageview');
+    </script>
+  </head>
+  <body data-spy="scroll" data-target=".my-toc" data-offset=50>
+    <!-- begin content -->
+    <!-- top navbar -->
+    <div class="navbar navbar-fixed-top navbar-inverse" role="navigation">
+      <div class="container">
+        <div class="navbar-header">
+          <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </button>
+          <a class="navbar-brand" href="www.cppremote.com">CppRemote</a>
+        </div>
+        <div class="collapse navbar-collapse">
+          <ul class="nav navbar-nav">
+            <li><a href="index.html">Home</a></li>
+            <li class="active"><a href="examples.html#example6">Examples</a></li>
+            <li><a href="documentation.html">Documentation</a></li>
+            <li><a href="download.html">Download</a></li>
+            <li><a href="forum.html">Forum</a></li>
+          </ul>
+        </div><!--/.nav-collapse -->
+      </div><!-- container -->
+    </div><!-- top navbar -->
+
+    <!-- page content -->
+    <div class="container my-page-container">
+      <div class="row">
+
+        <!-- page main area -->
+        <div class="my-main col-md-7" role="main">
+
+          <!-- add content here -->
+          <h2 id="header1">Example 6</h2>
+          <p>We are going to create a chat room in this example.  It introduces the items below:</p>
+          <ul>
+            <li>publish-subscribe feature</li>
+            <li>extend observer pattern to the interprocess space.</li>
+            <li>get callback from remote process.</li>
+          </ul>
+
+          <p>We are not going to explore any new API in this example but a design technique using the remote library.  We will create a chat room application where multiple clients can join chat room by connecting to the server and then start chatting with each other.</p>
+          <p>In our class design, we are going to create a <code>remote_reader</code> interface and a <code>remote_topic</code> interface. The <code>remote_reader</code> subscribes to the <code>remote_topic</code> class to get notification when any new message is posted to the <code>remote_topic</code>.  At the server side, we will create a <code>topic</code> class that implemnents the <code>remote_topic</code> interface.  The <code>topic</code> class take pointer to <code>remote_reader</code> interface directly in it's <code>subscribe/unsubscribe</code> methods.</p>
+          <p>This application can be implemented using the intrusive way and non-intrusive way.  This example will show the intrusive way where the target class take a remote pointer directly.  For the non-intrusive way, I will let you to explore it yourself.</p>
+          <p>Here is the code.</p>
+          <blockquote>
+            <p><strong>Note:</strong> Only the class definition code fragment is shown here.</p>
+          </blockquote>
+          <div class="my-anchor" id="remote_reader_hpp"></div>
+          <pre class="prettyprint lang-cpp linenums">
+// remote_reader.hpp
+REMOTE_CLASS_BEGIN(remote_reader)               \
+REMOTE_METHOD_M1(void, on_notify, std::string)  \
+REMOTE_CLASS_END</pre>
+
+          <div class="my-anchor" id="remote_topic_hpp"></div>
+          <pre class="prettyprint lang-cpp linenums">
+// remote_topic.hpp
+REMOTE_CLASS_BEGIN(remote_topic)                                        \
+REMOTE_METHOD_C0(std::string, about)                                    \
+REMOTE_METHOD_M1(void, post, std::string)                               \
+REMOTE_METHOD_M1(void, subscribe, boost::shared_ptr&lt;remote_reader>)     \
+REMOTE_METHOD_M1(void, unsubscribe, boost::shared_ptr&lt;remote_reader>)   \
+REMOTE_CLASS_END</pre>
+
+          <p>Below is the <code>topic</code> class to bind with <code>remote_topic</code> interface.  Note that it takes pointer to <code>remote_reader</code> directly in it's method (intrusive way).  In actual application, we will also need to handle error condition by catching exception but error handling code is not shown here.</code>
+          <div class="my-anchor" id="topic_hpp"></div>
+          <pre class="prettyprint lang-cpp linenums">
+// topic.hpp
+#include "remote_reader.hpp"
+
+class topic
+{
+    typedef boost::shared_ptr&lt;remote_reader> remote_reader_ptr;
+    
+    std::string m_about;
+    std::set&lt;remote_reader_ptr> m_readers;
+
+    static void notify(remote_reader_ptr rdr, std::string msg)
+    {
+        rdr->on_notify(msg);
+    }
+    
+public:
+    topic(std::string str) : m_about(str) {}
+
+    std::string about() const { return m_about; }
+
+    void subscribe(remote_reader_ptr rdr)
+    {
+        m_readers.insert(rdr);
+    }
+
+    void unsubscribe(remote_reader_ptr rdr)
+    {
+        m_readers.erase(rdr);
+    }
+
+    void post(std::string msg)
+    {
+        auto fn = boost::bind(&amp;notify, _1, msg);
+        std::for_each(m_readers.begin(), m_readers.end(), fn);
+    }
+};</pre>
+
+          <p>In server, we just need to bind the <code>topic</code> class as <code>remote_topic</code> service.</p>
+          <div class="my-anchor" id="server_cpp"></div>
+          <pre class="prettyprint lang-cpp linenums">
+// server.cpp
+#include "topic.hpp"
+#include "remote_topic.hpp"
+int main()
+{
+    std::string about("Sharing CppRemote techniques");
+    topic tp(about);
+
+    remote::server server;
+    server.bind&lt;remote_topic>(&tp, "cppr");
+
+    server.start(remote::make_tcp_binding(8888));
+    std::cout &lt;&lt; "serving topic \"" &lt;&lt; about &lt;&lt; "\"" &lt;&lt; std::endl;
+
+    std::cin.get();
+    return 0;
+}
+</pre>
+
+          <p>At the client application, just implement the <code>remote_reader</code> interface and subscribe to the <code>topic</code> class through <code>remote_topic</code> interface.</p>
+          <div class="my-anchor" id="client_cpp"></div>
+          <pre class="prettyprint lang-cpp linenums">
+// client.cpp
+#include "remote_topic.hpp"
+
+class reader
+{
+public:
+    void on_notify(std::string msg)
+    {
+        // handle on notify here
+        std::cout &lt;&lt; msg &lt;&lt; std::endl;
+    }
+};
+
+int main()
+{
+    remote::session session;
+    session.start(remote::make_tcp_binding("127.0.0.1", 8888));
+
+    // get user name while waiting for the session to connect
+    std::string name;
+    std::cout &lt;&lt; "Enter your name: ";
+    std::getline(std::cin, name);
+
+    if(session.wait_for_ready() != remote::session::started)
+        return -1;
+
+    // create a remote_reader pointer.
+    // we can also use 'remote_cast' instead of 'bind' here
+    auto rdr = session.bind&lt;remote_reader>(boost::make_shared&lt;reader>());
+
+    // get a remote_topic interface
+    auto tp = session.get&lt;remote_topic>("cppr");
+
+    // subscribe to the topic
+    tp->subscribe(rdr);
+    
+    // get the topic description and print it.
+    std::cout &lt;&lt; "*** \"" &lt;&lt; tp->about() &lt;&lt; "\" ***" &lt;&lt; std::endl;
+
+    // repeatedly get input from user and post to the chat room until we get "bye"
+    std::string input;
+    while(input != "bye")
+    {
+        std::getline(std::cin, input);
+        tp->post(name + ": " + input);
+    }
+
+    // leave the room
+    tp->unsubscribe(rdr);
+    std::cout &lt;&lt; "*** unsubscribed ***" &lt;&lt; std::endl;
+
+    std::cin.get();
+    return 0;
+}
+</pre>
+
+          <p>That's it.  The intrusive way of implementing remote observer pattern.  We have just designed a <em>publish-subscribe</em> feature that is normally available in most middleware framework.  But we have more way of expressing how we want to achieve this feature in our design and not only the framework way.</p>
+          <p>How about if we already have an observer pattern class model where the <code>topic</code> class accepts a pure abstract <code>ireader</code> class that is not remote pointer?  And we want to extend this model without modifying existing classes.  We can also design our remote model using the non-intrusive way.</p>
+          <p>I will leave this as exercise to you.  Here are the hints:</p>
+          <ul>
+            <li>inherit <code>ireader</code> in <code>remote_reader</code> interface.</li>
+            <li>create an adaptor class to adapt <code>topic</code> to <code>remote_topic</code> interface.</li>
+          </ul>
+          <p>Try it, it's fun. :)</p>
+
+          <a class="btn btn-default navbar-btn my-next-btn" href="examples.html#example6">Next Example</a>
+
+        </div>
+
+        <!-- page right sidebar -->
+        <div class="my-sidebar col-md-3" role="complementary">
+          <div class="my-toc hidden-print affix">
+            <ul class="nav">
+
+              <!-- add toc list here -->
+              <li><a href="#remote_reader_hpp">remote_reader.hpp</a></li>
+              <li><a href="#remote_topic_hpp">remote_topic.hpp</a></li>
+              <li><a href="#topic_hpp">topic.hpp</a></li>
+              <li><a href="#server_cpp">server.cpp</a></li>
+              <li><a href="#client_cpp">client.cpp</a></li>
+
+            </ul>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- footer -->
+    <hr>
+    <footer><p>&copy; Ng Kwan Ti 2013</p></footer>
+    <!-- end content -->
+
+    <!-- js from 3rd party vendor -->
+    <script src="//ajax.googleapis.com/ajax/libs/jquery/1.10.1/jquery.min.js"></script>
+    <script>window.jQuery || document.write('<script src="js/vendor/jquery-1.10.1.min.js"><\/script>')</script>
+    <script src="//netdna.bootstrapcdn.com/bootstrap/3.0.0/js/bootstrap.min.js"></script>
+    <script>$.fn.modal || document.write('<script src="js/vendor/bootstrap.min.js"><\/script>')</script>
+    <script src="js/vendor/prettify.js"></script>
+
+    <!-- custom js -->
+    <script src="js/main.js"></script>
+  </body>
+</html>

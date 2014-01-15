@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <meta name="author" content="">
+    <meta name="description" content="C++ remote documentation and user manual">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- <link rel="shortcut icon" href="favicon.ico"> -->
+
+    <!-- title for this page -->
+    <title>CppRemote - Documentation</title>
+
+    <!-- css from 3rd party vendor -->
+    <link rel="stylesheet" href="css/vendor/bootstrap.min.css">
+    <!-- <link rel="stylesheet" href="css/vendor/bootstrap-theme.min.css"> -->
+    <!-- <link rel="stylesheet" href="css/vendor/prettify.css"> -->
+
+    <!-- custom styles -->
+    <link rel="stylesheet" href="css/main.css">
+
+    <!-- HTML5 shim and Respond.js IE8 support of HTML5 elements and media queries -->
+    <!--[if lt IE 9]>
+      <script src="js/vendor/html5shiv.js"></script>
+      <script src="js/vendor/respond.min.js"></script>
+    <![endif]-->
+
+	<!-- Google Analytics -->
+	<script>
+      var gaProperty = 'UA-45742852-1';
+      var disableStr = 'ga-disable-' + gaProperty;
+      if (document.cookie.indexOf(disableStr + '=true') > -1) {
+        window[disableStr] = true;
+      }
+      
+	  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+	  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+	  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+	  })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+	  ga('create', gaProperty, 'cppremote.com');
+	  ga('send', 'pageview');
+	</script>
+  </head>
+  <body data-spy="scroll" data-target=".my-toc" data-offset=50>
+    <!-- begin content -->
+	<!-- top navbar -->
+	<div class="navbar navbar-fixed-top navbar-inverse" role="navigation">
+	  <div class="container">
+	    <div class="navbar-header">
+          <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </button>
+		  <a class="navbar-brand" href="www.cppremote.com">CppRemote</a>
+		</div>
+        <div class="collapse navbar-collapse">
+          <ul class="nav navbar-nav">
+            <li><a href="index.html">Home</a></li>
+            <li><a href="examples.html">Examples</a></li>
+            <li class="active"><a href="#">Documentation</a></li>
+            <li><a href="download.html">Download</a></li>
+			<li><a href="forum.html">Forum</a></li>
+          </ul>
+        </div><!--/.nav-collapse -->
+	  </div><!-- container -->
+	</div><!-- top navbar -->
+
+    <!-- page content -->
+	<div class="container my-page-container">
+	  <div class="row">
+
+	    <!-- page main area -->
+		<div class="my-main col-md-7" role="main">
+
+		  <!-- add content here -->
+          <h2 id="build">Build Manual</h2>
+          <p>For instruction on how to build the library go to <a href="build.html">here</a>.</p>
+          
+          <h2 id="manual">User Manual</h2>
+          <p>This user manual is divided into 3 parts.</p>
+          <p><a href="manual1.html">The first part</a> describes about how to define a remote interface and the behavior of a remote method.  In other words, syntax and semantics of remote interface. The chapters below belong to this part:</p>
+          <ul>
+            <li><a href="manual1.html#interface">Remote Interface</a></li>
+            <li><a href="manual1.html#method">Remote Method</a></li>
+            <li><a href="manual1.html#param">Parameter</a></li>
+            <li><a href="manual1.html#exception">Exception & Error</a></li>
+          </ul>
+          <p><a href="manual2.html">The second part</a> describes public interface for core module.  It is the reference for public classes and functions of core module.  The chapters below belong to this part:</p>
+          <ul>
+            <li><a href="manual2.html#pool_node">Pool Node</a></li>
+            <li><a href="manual2.html#session">Session</a></li>
+            <li><a href="manual2.html#server">Server</a></li>
+            <li><a href="manual2.html#attribute">Attribute</a></li>
+            <li><a href="manual2.html#io_runner">Io Runner</a></li>
+            <li><a href="manual2.html#global">Global</a></li>
+          </ul>
+          <p><a href="manual3.html">The last part</a> describes the communication module and the infrastructures included in this library.  The chapters below belong to this part:</p>
+          <ul>
+            <li><a href="manual3.html#bindings">Bindings</a></li>
+            <li><a href="manual3.html#bindings_interface">Bindings Interface</a></li>
+            <li><a href="manual3.html#bindings_template">Bindings Template</a></li>
+            <li><a href="manual3.html#bindings_factory">Bindings Factory</a></li>
+            <li><a href="manual3.html#bindings_serializer">Bindings Serializer</a></li>
+            <li><a href="manual3.html#bindings_transport">Bindings Transport</a></li>
+            <li><a href="manual3.html#archive">Archive</a></li>
+          </ul>
+		  
+		</div>
+		
+		<!-- page right sidebar -->
+		<div class="my-sidebar col-md-3" role="complementary">
+		  <div class="my-toc hidden-print affix">
+		    <ul class="nav">
+			
+			  <!-- add toc list here -->
+			  
+			</ul>
+		  </div>
+		</div>
+		
+	  </div>
+	</div>
+
+	<!-- footer -->
+	<hr>
+	<footer><p>&copy; Ng Kwan Ti 2013</p></footer>
+    <!-- end content -->
+	
+    <!-- js from 3rd party vendor -->
+    <script src="//ajax.googleapis.com/ajax/libs/jquery/1.10.1/jquery.min.js"></script>
+    <script>window.jQuery || document.write('<script src="js/vendor/jquery-1.10.1.min.js"><\/script>')</script>
+    <script src="//netdna.bootstrapcdn.com/bootstrap/3.0.0/js/bootstrap.min.js"></script>
+    <script>$.fn.modal || document.write('<script src="js/vendor/bootstrap.min.js"><\/script>')</script>
+    <!-- <script src="js/vendor/prettify.js"></script> -->
+
+    <!-- custom js -->
+    <!-- <script src="js/plugins.js"></script> <!-- custom plugin code for jquery -->
+    <script src="js/main.js"></script>
+  </body>
+</html>

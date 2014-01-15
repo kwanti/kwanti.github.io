@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <meta name="author" content="">
+    <meta name="description" content="C++ remote examples">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- <link rel="shortcut icon" href="favicon.ico"> -->
+
+    <!-- title for this page -->
+    <title>CppRemote - Examples</title>
+
+    <!-- css from 3rd party vendor -->
+    <link rel="stylesheet" href="css/vendor/bootstrap.min.css">
+    <!-- <link rel="stylesheet" href="css/vendor/bootstrap-theme.min.css"> -->
+    <!-- <link rel="stylesheet" href="css/vendor/prettify.css"> -->
+
+    <!-- custom styles -->
+    <link rel="stylesheet" href="css/main.css">
+
+    <!-- HTML5 shim and Respond.js IE8 support of HTML5 elements and media queries -->
+    <!--[if lt IE 9]>
+      <script src="js/vendor/html5shiv.js"></script>
+      <script src="js/vendor/respond.min.js"></script>
+    <![endif]-->
+
+	<!-- Google Analytics -->
+	<script>
+      var gaProperty = 'UA-45742852-1';
+      var disableStr = 'ga-disable-' + gaProperty;
+      if (document.cookie.indexOf(disableStr + '=true') > -1) {
+        window[disableStr] = true;
+      }
+      
+	  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+	  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+	  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+	  })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+	  ga('create', gaProperty, 'cppremote.com');
+	  ga('send', 'pageview');
+	</script>
+  </head>
+  <body data-spy="scroll" data-target=".my-toc" data-offset=50>
+    <!-- begin content -->
+	<!-- top navbar -->
+	<div class="navbar navbar-fixed-top navbar-inverse" role="navigation">
+	  <div class="container">
+	    <div class="navbar-header">
+          <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </button>
+		  <a class="navbar-brand" href="www.cppremote.com">CppRemote</a>
+		</div>
+        <div class="collapse navbar-collapse">
+          <ul class="nav navbar-nav">
+            <li><a href="index.html">Home</a></li>
+            <li class="active"><a href="#">Examples</a></li>
+            <li><a href="documentation.html">Documentation</a></li>
+            <li><a href="download.html">Download</a></li>
+			<li><a href="forum.html">Forum</a></li>
+          </ul>
+        </div><!--/.nav-collapse -->
+	  </div><!-- container -->
+	</div><!-- top navbar -->
+
+    <!-- page content -->
+	<div class="container my-page-container">
+	  <div class="row">
+
+	    <!-- page main area -->
+		<div class="my-main col-md-7" role="main">
+
+		  <!-- add content here -->
+		  <h4 id="example1"><a href="example1.html">Example 1: basic of remote interface</a></h4>
+          <p>This example shows the basic of creating remote interface and introduces some basic features below:</p>
+          <ul>
+            <li>synchronous method</li>
+            <li>asynchronous method</li>
+            <li>const qualified method</li>
+            <li>putting remote interface into namespace</li>
+            <li>binding target object to remote interface</li>
+            <li>getting a remote interface pointer from session</li>
+          </ul>
+
+		  <h4 id="example2"><a href="example2.html">Example 2: passing parameter</a></h4>
+          <p>This example shows basic parameter passing supported by this library.  This example introduces the items below:</p>
+          <ul>
+			<li>Passing serializable object</li>
+			<li>Passing serializable container</li>
+			<li>Passing reference and pointer</li>
+			<li>Passing shared_ptr and weak_ptr</li>
+			<li>Binding shared_ptr to remote interface</li>
+			<li>Getting raw pointer of remote interface</li>
+          </ul>
+
+		  <h4 id="example3"><a href="example3.html">Example 3: session and server</a></h4>
+		  <p>This example explores more about session and server classes, and it also shows how to set attributes of remote pointer.  It introduces the items below:</p>
+          <ul>
+			<li>Handling session and server events</li>
+			<li>Connect session and server with customized bindings.</li>
+			<li>Setting number of thread for global io_runner</li>
+			<li>Binding multiple instances of object as remote services</li>
+			<li>Binding target as remote service through a session object at client site</li>
+			<li>Change remote pointer to one-way call mode</li>
+			<li>Rethrowing exception pointer</li>
+          </ul>
+
+		  <h4 id="example4"><a href="example4.html">Example 4: remote pointer as parameter</a></h4>
+		  <p>In this example, we explore the remote pointer and how we can pass it as remote method parameter.  It introduces the items below:</p>
+          <ul>
+            <li>get a remote pointer with <code>bind</code> method.</li>
+            <li>get a remote pointer with <code>remote_cast</code> method.</li>
+            <li>pass remote pointer to a remote method.</li>
+            <li>return remote pointer from a remote method.</li>
+            <li>pass many remote pointers to a remote method with a container.</li>
+          </ul>
+
+		  <h4 id="example5"><a href="example5.html">Example 5: remote adaptor and factory pattern</a></h4>
+		  <p>This example shows how to adapt existing class to bind with remote interface and implement remote factory pattern.  It introduces the items below:</p>
+          <ul>
+            <li><code>remote::pool_node</code> class.</li>
+            <li>retrive target pointer from remote pointer using <code>target_cast</code> method.</li>
+            <li>how to create an adaptor class to adapt existing class to remote interface.</li>
+            <li>how to create remote service on demand.</li>
+          </ul>
+
+		  <h4 id="example6"><a href="example6.html">Example 6: chat room and observer pattern</a></h4>
+          <p>We are going to create a chat room in this example.  It introduces the items below:</p>
+          <ul>
+            <li>publish-subscribe feature</li>
+            <li>extend observer pattern to the interprocess space.</li>
+            <li>get callback from remote process.</li>
+          </ul>
+
+
+          <!-- Blank page -->
+          <section>
+            <br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br>
+            <br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br>
+          </section>
+		  
+		</div>
+		
+		<!-- page right sidebar -->
+		<div class="my-sidebar col-md-3" role="complementary">
+		  <div class="my-toc hidden-print affix">
+		    <ul class="nav">
+			
+			  <!-- add toc list here -->
+			  <li><a href="#example1">Example 1</a></li>
+			  <li><a href="#example2">Example 2</a></li>
+			  <li><a href="#example3">Example 3</a></li>
+			  <li><a href="#example4">Example 4</a></li>
+			  <li><a href="#example5">Example 5</a></li>
+			  <li><a href="#example6">Example 6</a></li>
+			  
+			</ul>
+		  </div>
+		</div>
+		
+	  </div>
+	</div>
+	
+	<!-- footer -->
+	<hr>
+	<footer><p>&copy; Ng Kwan Ti 2013</p></footer>
+    <!-- end content -->
+	
+    <!-- js from 3rd party vendor -->
+    <script src="//ajax.googleapis.com/ajax/libs/jquery/1.10.1/jquery.min.js"></script>
+    <script>window.jQuery || document.write('<script src="js/vendor/jquery-1.10.1.min.js"><\/script>')</script>
+    <script src="//netdna.bootstrapcdn.com/bootstrap/3.0.0/js/bootstrap.min.js"></script>
+    <script>$.fn.modal || document.write('<script src="js/vendor/bootstrap.min.js"><\/script>')</script>
+    <!-- <script src="js/vendor/prettify.js"></script> -->
+
+    <!-- custom js -->
+    <script src="js/main.js"></script>
+  </body>
+</html>
