@@ -81,7 +81,7 @@
             <h2 id="bindings">Bindings</h2>
             <p>In this library, the core layer is separated from the communication layer.  From the perspective of core library, it just connects to each other and sends <code>remote call</code> object through the channel interface classes. It doesn't need to care how they are connected and how the <code>remote call</code> object is sent.  Bindings is the layer that take care of how a <code>remote call</code> object is sent to the peer and reach the peer's <code><a href="#bindings_channel">channel interface</a></code> as the same <code>remote call</code> object.</p>
             <p>Bindings specifies how session communicate with each other.  It specifies things like serialization format, encoding, protocol and transport details required to communicate with each other. It consist of combination of binding elements that add together, with each element specifies certain aspect of how endpoint communicate.  At minimum, bindings must include a serializer and a transport element.</p>
-            <p>Bindings elements can be mixed together at compile time as template or at runtime as interface classes.  This library currently provides compile time bindings as template.  It provides various serializer and transport elements that can be mixed together as bindings.  Bindings module is open for extension.  If you need bindings elements that is not provided by this library, you can create one and make a custom bindings yourself.</p>
+            <p>Bindings elements can be mixed together at compile time as template or at runtime as interface classes.  This library currently provides compile time bindings as template.  It provides various serializer, filter and transport elements that can be mixed together as bindings.  Bindings module is open for extension.  If you need bindings elements that is not provided by this library, you can create one and make a custom bindings yourself.</p>
 
             <h2 id="bindings_interface">Interface</h2>
             <p>Bindings interface is the contact point between core and bindings layers.  It consist of 3 classes that are pure interfaces which are <code>binding</code>, <code>channel</code> and <code>acceptor</code>.</p>
@@ -181,7 +181,7 @@
             <p>This library provides a set of template classes that implement the bindings interfaces.  The template classes enable adding of bindings elements at compile time.</p>
 
             <h4 id="bindings_basic_binding">basic_binding</h4>
-            <p>Template implements the binding interface.  This template is to configure bindings elements at compile time.  Current implementation accepts <a href="#bindings_serializer">serializer</a> and <a href="#bindings_transport">transport</a> types as template parameter.</p>
+            <p>Template implements the binding interface.  This template is to configure bindings elements at compile time.  It accepts <a href="#bindings_serializer">serializer</a>, <a href="#bindings_filter">filter</a> and <a href="#bindings_transport">transport</a> types as template parameter.</p>
 
             <h4 id="bindings_basic_channel">basic_channel</h4>
             <p>Template implements the channel interface.</p>
@@ -274,7 +274,7 @@
           <!-- Archive -->
           <section>
           <h2 id="archive">Archive</h2>
-          <p>This library implemented a set of archives for it's internal needs to track all the loaded raw pointers when serializing <code>remote call</code>.  It's is based on existing archives in the boost.serialization library.  In normal used case, they behave exactly the same as archives in the boost.serialization library.  Using archives included in this library for persisting data together with remote interface should reduce among of generated code.</p>
+          <p>This library implemented a set of archives for it's internal needs to track all the loaded raw pointers when serializing <code>remote call</code>.  It's is based on existing archives in the boost.serialization library.  In normal used case, they behave exactly the same as archives in the boost.serialization library.  Using archives included in this library for persisting data together with remote interface will reduce among of generated code.</p>
           <p>They are in the <code>remote::archive</code> namespace.</p>
 
           </section>
